@@ -1648,6 +1648,17 @@ function createPrecisePersonCutout(source, segmentationMask) {
    SINGLE-DOC TOOLS MODULE — MULTI-TOOL (all-at-once)
 ============================================================ */
 window.sdt = (() => {
+  // LOW-END PC FIX: cap how many pixels we ever put in a working canvas.
+  // navigator.deviceMemory (Chrome/Edge) reports approx RAM in GB when available.
+  // On 1-2GB RAM / old Windows 7 machines we cut the cap hard so rotate+crop
+  // canvases never get big enough to hang the tab. Falls back to a safe
+  // middle-ground cap when the browser doesn't expose deviceMemory at all.
+  function getMtMaxPixels() {
+    const mem = navigator.deviceMemory; // GB, undefined on many browsers
+    if (mem && mem <= 2) return 4 * 1024 * 1024;   // ~4MP — very low RAM
+    if (mem && mem <= 4) return 8 * 1024 * 1024;   // ~8MP — low RAM
+    return 16 * 1024 * 1024;                       // default cap
+  }
   function toast(msg, type='success') {
     const w=document.getElementById('sdtToastWrap');
     const t=document.createElement('div'); t.className=`toast ${type}`; t.textContent=msg;
@@ -1915,11 +1926,13 @@ window.sdt = (() => {
     const outW = Math.max(1, Math.ceil(srcW * cos + srcH * sin));
     const outH = Math.max(1, Math.ceil(srcW * sin + srcH * cos));
 
-    // LOW-END PC FIX: Cap the canvas pixel area to ~16 megapixels.
-    // Old hardware (Windows 7, 2-4 GB RAM) silently fails or hangs on very large
-    // canvases, causing "Apply Crop does nothing". We scale down if needed, then
-    // the final download step reuses the same logic so output is still correct.
-    const MAX_PIXELS = 16 * 1024 * 1024; // 16 MP
+    // LOW-END PC FIX: Cap the canvas pixel area. Old hardware (Windows 7, 1-4 GB
+    // RAM) silently fails or hangs on very large canvases, causing "Apply Crop
+    // does nothing". We scale down if needed, then the final download step
+    // reuses the same logic so output is still correct. The cap now also adapts
+    // to navigator.deviceMemory when the browser reports it, so a 1-2GB machine
+    // gets an even smaller working canvas than the default 16MP ceiling.
+    const MAX_PIXELS = getMtMaxPixels();
     const pixelCount = outW * outH;
     let drawScale = 1;
     if (pixelCount > MAX_PIXELS) {
@@ -3472,59 +3485,6 @@ window.sdt = (() => {
     const btn = document.getElementById('mtRemoveBgBtn');
     const status = document.getElementById('mtBgStatus');
     btn.disabled = true;
-    btn.textContent = '⏳ Processing…';
-
-    _loadMediaPipe(async (seg) => {
-      try {
-        status.textContent = '🔍 Detecting person & segmenting…';
-
-        // Draw source to an offscreen canvas
-        const segmentationSource = _mtOrigImgBackup || mtOrigImg;
-        const src = document.createElement('canvas');
-        src.width = segmentationSource.naturalWidth;
-        src.height = segmentationSource.naturalHeight;
-        const sCtx = src.getContext('2d');
-        sCtx.drawImage(segmentationSource, 0, 0);
-
-        // Run segmentation — MediaPipe needs an HTMLImageElement or canvas
-        await new Promise((resolve, reject) => {
-          window._mpSegCallback = (results) => {
-            window._mpSegCallback = null;
-            try {
-              // results.segmentationMask is a canvas with the mask
-              status.textContent = '✨ Refining hair, clothing and edge detail…';
-              _mtBgMask = createPrecisePersonCutout(src, results.segmentationMask);
-              resolve();
-            } catch(e) { reject(e); }
-          };
-          Promise.resolve(seg.send({image: src})).catch(reject);
-        });
-
-        // Backup original image
-        if (!_mtOrigImgBackup) _mtOrigImgBackup = mtOrigImg;
-
-        // Apply current fill colour and update mtOrigImg
-        _applyBgFill(_mtBgColor);
-
-        // Show UI
-        document.getElementById('mtBgColorRow').style.display = 'block';
-        document.getElementById('mtRestoreBgBtn').style.display = 'inline-flex';
-        status.textContent = '✅ Background removed! Pick a fill colour below, or keep transparent.';
-        btn.textContent = '✨ Re-run Removal';
-      } catch(e) {
-        status.textContent = '❌ Error: ' + e.message;
-        console.error(e);
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  }
-
-  async function mtRemoveBg() {
-    if (!mtOrigImg) { toast('Upload an image first.', 'error'); return; }
-    const btn = document.getElementById('mtRemoveBgBtn');
-    const status = document.getElementById('mtBgStatus');
-    btn.disabled = true;
     btn.textContent = 'Processing...';
 
     try {
@@ -3982,6 +3942,18 @@ const PersonBackground = (() => {
    All placed together on one A4 sheet.
 ============================================================ */
 const mp = (() => {
+  // LOW-END PC FIX: cap how many pixels we ever put in a working canvas.
+  // navigator.deviceMemory (Chrome/Edge) reports approx RAM in GB when available.
+  // On 1-2GB RAM / old Windows 7 machines we cut the cap hard so rotate+crop
+  // canvases never get big enough to hang the tab. Falls back to a safe
+  // middle-ground cap when the browser doesn't expose deviceMemory at all.
+  function getPersonMaxPixels() {
+    const mem = navigator.deviceMemory; // GB, undefined on many browsers
+    if (mem && mem <= 2) return 4 * 1024 * 1024;   // ~4MP — very low RAM
+    if (mem && mem <= 4) return 8 * 1024 * 1024;   // ~8MP — low RAM
+    return 16 * 1024 * 1024;                       // default cap
+  }
+
   let personCount = 1;
   let orient = 'portrait';   // matches HTML default (Portrait button has 'active' class)
   let mpPaperSize = 'a4';    // matches HTML default (A4 button has 'active' class)
@@ -4053,15 +4025,31 @@ const mp = (() => {
     const sin = Math.abs(Math.sin(rad));
     const outW = Math.max(1, Math.ceil(srcW * cos + srcH * sin));
     const outH = Math.max(1, Math.ceil(srcW * sin + srcH * cos));
+
+    // LOW-END PC FIX: this used to allocate a full-resolution rotated canvas
+    // with NO ceiling. A normal 12-20MP phone photo would try to allocate a
+    // huge canvas (plus another one for the crop preview) — on a 1-2GB RAM
+    // Windows 7 PC that is exactly what hangs/freezes the tab when cropping
+    // in Photo Maker. Passport/ID photo output never needs more than a few
+    // MP even at print DPI, so capping here costs nothing in real quality.
+    const MAX_PIXELS = getPersonMaxPixels();
+    const pixelCount = outW * outH;
+    let drawScale = 1;
+    if (pixelCount > MAX_PIXELS) {
+      drawScale = Math.sqrt(MAX_PIXELS / pixelCount);
+    }
+    const cW = Math.max(1, Math.round(outW * drawScale));
+    const cH = Math.max(1, Math.round(outH * drawScale));
+
     const canvas = document.createElement('canvas');
-    canvas.width = outW;
-    canvas.height = outH;
+    canvas.width = cW;
+    canvas.height = cH;
     const ctx = canvas.getContext('2d');
     ctx.save();
-    ctx.translate(outW / 2, outH / 2);
+    ctx.translate(cW / 2, cH / 2);
     ctx.rotate(rad);
     ctx.scale(state.flipH ? -1 : 1, state.flipV ? -1 : 1);
-    ctx.drawImage(image, -srcW / 2, -srcH / 2);
+    ctx.drawImage(image, -srcW * drawScale / 2, -srcH * drawScale / 2, srcW * drawScale, srcH * drawScale);
     ctx.restore();
     return canvas;
   }
