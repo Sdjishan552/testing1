@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#08090f" />
+  <meta name="description" content="DocStitcher — Make passport photos, stitch document scans into A4 PDFs, remove backgrounds, compress PDFs. 100% free. Your files never leave your device." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="DocStitcher" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>DocStitcher — Document & Photo PDF Maker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+
+  <style>
+    /* ============================================================
+       DOCSTITCHER LANDING PAGE v10
+       Design: deep-space ink with electric citrine accent
+       Palette: #08090f bg · #f5c842 citrine · #ff5c35 ember ·
+                #1ef0d4 ion · #a855f7 violet · #f0f4ff text
+       Signature: a live animated "document assembling" canvas
+       in the hero that shows the actual app doing its job
+    ============================================================ */
+    :root {
+      color-scheme: dark;
+      --bg:      #08090f;
+      --surf:    #10131e;
+      --card:    #14192a;
+      --border:  rgba(255,255,255,0.07);
+      --citrine: #f5c842;
+      --ember:   #ff5c35;
+      --ion:     #1ef0d4;
+      --violet:  #a855f7;
+      --green:   #22c55e;
+      --text:    #f0f4ff;
+      --muted:   #8492a6;
+      --faint:   #3d4a5f;
+      --ff-d:    "Space Grotesk", sans-serif;
+      --ff-b:    "Plus Jakarta Sans", sans-serif;
+      --radius:  18px;
+      --glow-c:  rgba(245,200,66,0.18);
+      --glow-e:  rgba(255,92,53,0.14);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); font-family: var(--ff-b); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; border: none; background: none; }
+    img { display: block; max-width: 100%; }
+    #landing-page { display: flex; flex-direction: column; }
+
+    /* ── Keyframes ── */
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:none; } }
+    @keyframes floatY   { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-12px); } }
+    @keyframes spinRing { to { transform:rotate(360deg); } }
+    @keyframes pulseGlow{ 0%,100% { opacity:.5; } 50% { opacity:.9; } }
+    @keyframes ticker   { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+    @keyframes blink    { 0%,100%{opacity:1}50%{opacity:0} }
+    @keyframes gradShift{ 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    @keyframes docSlide { 0%{opacity:0;transform:translateX(-18px)} 100%{opacity:1;transform:none} }
+    @keyframes countUp  { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} }
+    @keyframes borderAnim{ 0%,100%{border-color:rgba(245,200,66,.2)} 50%{border-color:rgba(245,200,66,.55)} }
+    @keyframes shimmer  { from{background-position:-200% 0} to{background-position:200% 0} }
+    @keyframes popIn    { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+    @keyframes scanLine {
+      0%  { top:0%;   opacity:0; }
+      5%  { top:2%;   opacity:1; }
+      48% { top:98%;  opacity:1; }
+      53% { top:100%; opacity:0; }
+      54% { top:0%;   opacity:0; }
+      59% { top:2%;   opacity:1; }
+      98% { top:98%;  opacity:1; }
+      100%{ top:100%; opacity:0; }
+    }
+    .rv { opacity:0; transform:translateY(28px); transition:opacity .6s ease, transform .65s cubic-bezier(.22,.68,0,1.2); }
+    .rv.on { opacity:1; transform:none; }
+    .rv1 { transition-delay:.08s; } .rv2 { transition-delay:.16s; }
+    .rv3 { transition-delay:.24s; } .rv4 { transition-delay:.32s; }
+    .rv5 { transition-delay:.40s; }
+
+    /* ── Ambient background ── */
+    .ambient { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+    .blob {
+      position:absolute; border-radius:50%; filter:blur(100px);
+      animation:pulseGlow 7s ease-in-out infinite;
+    }
+    .blob:nth-child(1){ width:700px;height:700px;top:-280px;left:-200px;
+      background:radial-gradient(circle,rgba(245,200,66,.09),transparent 65%);animation-delay:0s; }
+    .blob:nth-child(2){ width:600px;height:600px;top:20%;right:-180px;
+      background:radial-gradient(circle,rgba(30,240,212,.07),transparent 65%);animation-delay:2.5s; }
+    .blob:nth-child(3){ width:800px;height:800px;bottom:-300px;left:25%;
+      background:radial-gradient(circle,rgba(168,85,247,.07),transparent 65%);animation-delay:5s; }
+    .noise-lp {
+      position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.028;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:200px;
+    }
+
+    /* ══════════════════════ NAV ══════════════════════ */
+    .nav {
+      position:sticky; top:0; z-index:200;
+      background:rgba(8,9,15,.72); backdrop-filter:blur(22px) saturate(160%);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-inner {
+      max-width:1140px; margin:0 auto; padding:0 28px;
+      height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo-mark {
+      width:36px; height:36px; border-radius:10px; flex-shrink:0;
+      background:linear-gradient(135deg,#ff5c35,#f5c842);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 16px rgba(255,92,53,.4);
+    }
+    .logo-name { font-family:var(--ff-d); font-size:17px; font-weight:800; color:#fff; letter-spacing:-.02em; }
+    .nav-links { display:flex; align-items:center; gap:4px; }
+    .nav-link {
+      font-family:var(--ff-d); font-size:13.5px; font-weight:600;
+      color:var(--muted); padding:7px 13px; border-radius:8px;
+      transition:color .18s, background .18s;
+    }
+    .nav-link:hover { color:#fff; background:rgba(255,255,255,.06); }
+    .nav-cta {
+      font-family:var(--ff-d); font-size:13px; font-weight:800; color:#08090f;
+      background:linear-gradient(135deg,#f5c842,#ff5c35);
+      padding:9px 20px; border-radius:10px; white-space:nowrap;
+      box-shadow:0 4px 16px rgba(255,92,53,.35);
+      transition:transform .18s, box-shadow .18s;
+    }
+    .nav-cta:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(255,92,53,.5); }
+
+    /* ══════════════════════ TICKER ══════════════════════ */
+    .ticker {
+      overflow:hidden; border-bottom:1px solid rgba(245,200,66,.12);
+      background:linear-gradient(90deg,rgba(245,200,66,.06),rgba(30,240,212,.05),rgba(245,200,66,.06));
+      padding:9px 0;
+    }
+    .ticker-track {
+      display:flex; width:max-content;
+      animation:ticker 32s linear infinite;
+    }
+    .ticker-item {
+      display:flex; align-items:center; gap:10px; padding:0 36px;
+      font-family:var(--ff-d); font-size:11.5px; font-weight:700;
+      color:rgba(255,255,255,.42); letter-spacing:.07em; text-transform:uppercase; white-space:nowrap;
+    }
+    .t-dot { width:5px; height:5px; border-radius:50%; background:var(--citrine); flex-shrink:0; }
+
+    /* ══════════════════════ HERO ══════════════════════ */
+    .hero {
+      position:relative; z-index:1;
+      max-width:1140px; margin:0 auto; padding:88px 28px 64px;
+      display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;
+    }
+    .hero-left {}
+    .hero-eyebrow {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(245,200,66,.09); border:1px solid rgba(245,200,66,.22);
+      border-radius:99px; padding:5px 15px; margin-bottom:24px;
+      font-family:var(--ff-d); font-size:11.5px; font-weight:800;
+      color:var(--citrine); letter-spacing:.08em; text-transform:uppercase;
+      animation:fadeUp .5s ease both;
+    }
+    .ey-dot { width:6px; height:6px; border-radius:50%; background:var(--citrine); animation:pulseGlow 1.6s ease-in-out infinite; }
+    .hero-h1 {
+      font-family:var(--ff-d); font-size:clamp(36px,5.2vw,64px);
+      font-weight:800; line-height:1.07; letter-spacing:-.04em; color:#fff;
+      margin-bottom:22px; animation:fadeUp .55s .05s ease both;
+    }
+    .h1-grad {
+      background:linear-gradient(120deg,#f5c842 0%,#ff5c35 45%,#a855f7 90%);
+      background-size:200% 200%; animation:gradShift 5s ease infinite;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hero-sub {
+      font-size:clamp(15px,1.9vw,17.5px); color:var(--muted); line-height:1.72;
+      margin-bottom:36px; max-width:480px; animation:fadeUp .6s .1s ease both;
+    }
+    .hero-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; animation:fadeUp .65s .15s ease both; }
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:10px;
+      font-family:var(--ff-d); font-size:15px; font-weight:800; color:#08090f;
+      background:linear-gradient(135deg,#f5c842,#ff5c35);
+      padding:15px 30px; border-radius:14px;
+      box-shadow:0 8px 28px rgba(255,92,53,.38);
+      transition:all .22s cubic-bezier(.22,.68,0,1.2);
+    }
+    .btn-primary:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 16px 42px rgba(255,92,53,.55); }
+    .btn-ghost {
+      display:inline-flex; align-items:center; gap:8px;
+      font-family:var(--ff-d); font-size:14px; font-weight:700; color:#fff;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.13);
+      padding:14px 26px; border-radius:14px; transition:all .2s;
+    }
+    .btn-ghost:hover { background:rgba(255,255,255,.11); transform:translateY(-2px); }
+    .hero-note { font-size:12px; color:var(--faint); animation:fadeUp .7s .2s ease both; }
+    .hero-note span { color:var(--muted); }
+
+    /* Hero right — animated document assembler */
+    .hero-right { position:relative; z-index:1; animation:fadeUp .7s .25s ease both; }
+    .doc-assembler {
+      background:var(--card); border:1px solid rgba(245,200,66,.14);
+      border-radius:24px; padding:24px; position:relative; overflow:visible;
+      box-shadow:0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(245,200,66,.06);
+      animation:borderAnim 4s ease-in-out infinite;
+    }
+    .doc-assembler::before {
+      content:''; position:absolute; inset:0; border-radius:24px;
+      background:radial-gradient(ellipse at 60% 0%, rgba(245,200,66,.06), transparent 55%);
+      pointer-events:none;
+    }
+    .da-bar {
+      display:flex; align-items:center; gap:7px; margin-bottom:18px;
+    }
+    .da-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .da-dot:nth-child(1) { background:#ff5f57; }
+    .da-dot:nth-child(2) { background:#febc2e; }
+    .da-dot:nth-child(3) { background:#28c840; }
+    .da-title { font-family:var(--ff-d); font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; margin-left:6px; }
+    /* A4 page mockup */
+    .a4-page {
+      background:#fff; border-radius:10px; padding:14px;
+      box-shadow:0 16px 48px rgba(0,0,0,.5);
+      position:relative;
+    }
+    .a4-label {
+      font-size:8px; font-weight:800; color:#999; text-transform:uppercase;
+      letter-spacing:.1em; margin-bottom:10px;
+    }
+    .a4-slots { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+    .a4-slot {
+      border-radius:6px; aspect-ratio:3/4.2; position:relative; overflow:hidden;
+    }
+    .a4-slot-front {
+      background:linear-gradient(145deg,#dbeafe 10%,#bfdbfe 100%);
+    }
+    .a4-slot-back {
+      background:linear-gradient(145deg,#fce7f3 10%,#fbcfe8 100%);
+    }
+    .a4-slot-lbl {
+      position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+      font-size:7px; font-weight:800; color:rgba(0,0,0,.38); text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;
+    }
+    /* scan-line — bright laser scanner */
+    .a4-slot::after {
+      content:''; position:absolute; left:0; right:0; height:3px; z-index:3;
+      background:linear-gradient(90deg,transparent 0%,rgba(30,240,212,.25) 8%,rgba(30,240,212,1) 38%,rgba(255,255,255,.98) 50%,rgba(30,240,212,1) 62%,rgba(30,240,212,.25) 92%,transparent 100%);
+      box-shadow:0 0 8px 3px rgba(30,240,212,.95),0 0 22px 8px rgba(30,240,212,.5),0 0 44px 14px rgba(30,240,212,.2);
+      animation:scanLine 2.4s ease-in-out infinite;
+    }
+    .a4-slot::before {
+      content:''; position:absolute; left:0; right:0; height:80px; margin-top:-40px;
+      z-index:2; pointer-events:none;
+      background:linear-gradient(180deg,transparent 0%,rgba(30,240,212,.08) 40%,rgba(30,240,212,.18) 50%,rgba(30,240,212,.08) 60%,transparent 100%);
+      animation:scanLine 2.4s ease-in-out infinite;
+    }
+    .a4-slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:6px; z-index:1; }
+    .a4-sig {
+      border:1.5px dashed rgba(255,92,53,.35);
+      border-radius:5px; padding:7px 10px; margin-bottom:8px;
+      background:linear-gradient(90deg,rgba(255,92,53,.05),rgba(245,200,66,.04));
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .a4-sig-lbl { font-size:7.5px; font-weight:800; color:rgba(255,100,60,.65); text-transform:uppercase; letter-spacing:.06em; }
+    .a4-sig-cursor { font-size:10px; animation:blink 1.2s step-end infinite; color:#ff5c35; }
+    .a4-actions { display:flex; gap:6px; }
+    .a4-action {
+      flex:1; padding:7px 0; border-radius:7px; font-size:9px; font-weight:800;
+      text-align:center; text-transform:uppercase; letter-spacing:.05em;
+    }
+    .a4-action--dl { background:linear-gradient(90deg,#ff5c35,#f5c842); color:#08090f; }
+    .a4-action--sec { background:#f0f4ff; color:#64748b; }
+    /* USP badges — all inside the frame */
+    .da-badge {
+      position:absolute; border-radius:10px; padding:8px 14px;
+      backdrop-filter:blur(16px); font-family:var(--ff-d); font-size:11px;
+      font-weight:800; white-space:nowrap; border:1px solid;
+      animation:floatY 4s ease-in-out infinite; z-index:10;
+    }
+    .da-badge--1 { top:14px; right:14px; background:rgba(34,197,94,.22); border-color:rgba(34,197,94,.55); color:#4ade80; box-shadow:0 4px 18px rgba(34,197,94,.28); animation-delay:0s; }
+    .da-badge--2 { bottom:64px; left:14px; background:rgba(30,240,212,.2); border-color:rgba(30,240,212,.5); color:#1ef0d4; box-shadow:0 4px 18px rgba(30,240,212,.25); animation-delay:1.4s; }
+    .da-badge--3 { top:50%; right:14px; transform:translateY(-50%); background:rgba(168,85,247,.22); border-color:rgba(168,85,247,.5); color:#c084fc; box-shadow:0 4px 18px rgba(168,85,247,.25); animation-delay:.7s; }
+
+    /* ══════════════════════ STATS ══════════════════════ */
+    .stats-strip {
+      position:relative; z-index:1;
+      max-width:1140px; margin:0 auto; padding:0 28px 72px;
+    }
+    .stats-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+      background:var(--border); border-radius:20px; overflow:hidden;
+    }
+    .stat {
+      background:var(--surf); padding:28px 20px; text-align:center;
+    }
+    .stat-num {
+      font-family:var(--ff-d); font-size:clamp(26px,3.5vw,42px);
+      font-weight:800; letter-spacing:-.04em; color:#fff; line-height:1;
+    }
+    .stat-num em { color:var(--citrine); font-style:normal; }
+    .stat-lbl { font-size:11.5px; color:var(--muted); font-weight:700; margin-top:6px; text-transform:uppercase; letter-spacing:.06em; }
+
+    /* ══════════════════════ HONESTY STRIP ══════════════════════ */
+    .honesty-strip {
+      position:relative; z-index:1;
+      max-width:1140px; margin:0 auto 72px; padding:0 28px;
+    }
+    .honesty-card {
+      background:linear-gradient(135deg,rgba(245,200,66,.07),rgba(255,92,53,.05));
+      border:1px solid rgba(245,200,66,.2);
+      border-radius:20px; padding:28px 32px;
+      display:grid; grid-template-columns:auto 1fr; gap:24px; align-items:start;
+    }
+    .honesty-icon {
+      width:52px; height:52px; border-radius:14px; flex-shrink:0;
+      background:rgba(245,200,66,.12); border:1px solid rgba(245,200,66,.25);
+      display:flex; align-items:center; justify-content:center; font-size:24px;
+    }
+    .honesty-title {
+      font-family:var(--ff-d); font-size:16px; font-weight:800; color:#fff;
+      margin-bottom:8px; letter-spacing:-.015em;
+    }
+    .honesty-body { font-size:13.5px; color:var(--muted); line-height:1.68; }
+    .honesty-body strong { color:var(--citrine); }
+    .honesty-pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .h-pill {
+      font-size:11.5px; font-weight:700; padding:4px 12px; border-radius:99px;
+      font-family:var(--ff-d);
+    }
+    .h-pill--yes { background:rgba(34,197,94,.1); color:#4ade80; border:1px solid rgba(34,197,94,.25); }
+    .h-pill--no  { background:rgba(255,92,53,.1);  color:#fb7c5c; border:1px solid rgba(255,92,53,.25); }
+    .h-pill--ad  { background:rgba(245,200,66,.1); color:var(--citrine); border:1px solid rgba(245,200,66,.25); }
+
+    /* ══════════════════════ HIGHLIGHTS ══════════════════════ */
+    .hl-wrap { position:relative; z-index:1; max-width:1140px; margin:0 auto; padding:0 28px 72px; }
+    .hl-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .hl-card {
+      border-radius:var(--radius); padding:28px 24px;
+      border:1px solid var(--border); position:relative; overflow:hidden;
+      transition:transform .28s cubic-bezier(.22,.68,0,1.2), box-shadow .28s;
+    }
+    .hl-card:hover { transform:translateY(-6px); box-shadow:0 28px 60px rgba(0,0,0,.4); }
+    .hl-card--india  { background:linear-gradient(140deg,rgba(255,153,51,.09),rgba(19,114,35,.07)); border-color:rgba(255,153,51,.2); }
+    .hl-card--secure { background:linear-gradient(140deg,rgba(30,240,212,.09),rgba(168,85,247,.06)); border-color:rgba(30,240,212,.18); }
+    .hl-card--speed  { background:linear-gradient(140deg,rgba(245,200,66,.09),rgba(255,92,53,.07)); border-color:rgba(245,200,66,.2); }
+    .hl-emoji { font-size:34px; line-height:1; margin-bottom:16px; display:block; }
+    .hl-title { font-family:var(--ff-d); font-size:16.5px; font-weight:800; color:#fff; letter-spacing:-.02em; margin-bottom:10px; }
+    .hl-desc { font-size:13.5px; color:var(--muted); line-height:1.68; margin-bottom:16px; }
+    .hl-badge {
+      display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700;
+      padding:4px 12px; border-radius:99px; font-family:var(--ff-d); letter-spacing:.04em;
+    }
+    .hl-badge--india  { background:rgba(255,153,51,.12); color:#ff9933; border:1px solid rgba(255,153,51,.28); }
+    .hl-badge--secure { background:rgba(30,240,212,.1);  color:var(--ion); border:1px solid rgba(30,240,212,.25); }
+    .hl-badge--speed  { background:rgba(245,200,66,.1);  color:var(--citrine); border:1px solid rgba(245,200,66,.25); }
+
+    /* ══════════════════════ SECTION HEADINGS ══════════════════════ */
+    .sec-eye {
+      font-family:var(--ff-d); font-size:11px; font-weight:800; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--citrine); margin-bottom:12px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .sec-eye::before { content:''; flex:1; max-width:28px; height:1.5px; background:var(--citrine); opacity:.5; }
+    .sec-h2 {
+      font-family:var(--ff-d); font-size:clamp(26px,4vw,46px); font-weight:800;
+      letter-spacing:-.03em; color:#fff; line-height:1.1; margin-bottom:14px;
+    }
+    .sec-sub { font-size:15.5px; color:var(--muted); line-height:1.7; max-width:540px; }
+
+    /* ══════════════════════ DEMO GRID ══════════════════════ */
+    .demo-sec { position:relative; z-index:1; max-width:1140px; margin:0 auto; padding:0 28px 80px; }
+    .demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+    .demo-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px; position:relative; overflow:hidden;
+    }
+    .demo-card::before {
+      content:''; position:absolute; inset:0; border-radius:var(--radius);
+      background:linear-gradient(135deg,rgba(245,200,66,.04),transparent 60%);
+      pointer-events:none;
+    }
+    .dc-title {
+      font-family:var(--ff-d); font-size:12px; font-weight:700;
+      color:var(--muted); text-transform:uppercase; letter-spacing:.06em;
+      display:flex; align-items:center; gap:8px; margin-bottom:16px;
+    }
+    .dc-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+    /* ══════════════════════ FEATURES ══════════════════════ */
+    .feat-sec { position:relative; z-index:1; max-width:1140px; margin:0 auto; padding:0 28px 80px; }
+    .feat-head { margin-bottom:48px; }
+    .feat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .feat-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px; position:relative; overflow:hidden;
+      transition:transform .28s cubic-bezier(.22,.68,0,1.2), border-color .22s, box-shadow .28s;
+    }
+    .feat-card::after { content:''; position:absolute; inset:0; border-radius:var(--radius); opacity:0; transition:opacity .3s; }
+    .feat-card:hover { transform:translateY(-5px); border-color:rgba(255,255,255,.15); box-shadow:0 24px 56px rgba(0,0,0,.4); }
+    .feat-card:hover::after { opacity:1; }
+    .fc--amber:hover { border-color:rgba(245,200,66,.35); }
+    .fc--amber::after { background:linear-gradient(135deg,rgba(245,200,66,.05),transparent 65%); }
+    .fc--coral:hover { border-color:rgba(255,92,53,.35); }
+    .fc--coral::after { background:linear-gradient(135deg,rgba(255,92,53,.05),transparent 65%); }
+    .fc--teal:hover { border-color:rgba(30,240,212,.35); }
+    .fc--teal::after { background:linear-gradient(135deg,rgba(30,240,212,.05),transparent 65%); }
+    .fc--purple:hover { border-color:rgba(168,85,247,.35); }
+    .fc--purple::after { background:linear-gradient(135deg,rgba(168,85,247,.05),transparent 65%); }
+    .fc--green:hover { border-color:rgba(34,197,94,.35); }
+    .fc--green::after { background:linear-gradient(135deg,rgba(34,197,94,.05),transparent 65%); }
+    .fc--blue:hover { border-color:rgba(96,165,250,.35); }
+    .fc--blue::after { background:linear-gradient(135deg,rgba(96,165,250,.05),transparent 65%); }
+    .feat-icon {
+      width:46px; height:46px; border-radius:13px; margin-bottom:18px;
+      display:flex; align-items:center; justify-content:center; font-size:21px;
+      position:relative; z-index:1; flex-shrink:0;
+    }
+    .fi--amber { background:linear-gradient(135deg,rgba(245,200,66,.2),rgba(255,92,53,.14)); box-shadow:0 4px 16px rgba(245,200,66,.18); }
+    .fi--coral { background:linear-gradient(135deg,rgba(255,92,53,.2),rgba(245,200,66,.1)); box-shadow:0 4px 16px rgba(255,92,53,.18); }
+    .fi--teal  { background:linear-gradient(135deg,rgba(30,240,212,.2),rgba(34,197,94,.1)); box-shadow:0 4px 16px rgba(30,240,212,.18); }
+    .fi--purple{ background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(96,165,250,.1)); box-shadow:0 4px 16px rgba(168,85,247,.18); }
+    .fi--green { background:linear-gradient(135deg,rgba(34,197,94,.2),rgba(30,240,212,.1)); box-shadow:0 4px 16px rgba(34,197,94,.18); }
+    .fi--blue  { background:linear-gradient(135deg,rgba(96,165,250,.2),rgba(168,85,247,.1)); box-shadow:0 4px 16px rgba(96,165,250,.18); }
+    .feat-title { font-family:var(--ff-d); font-size:15px; font-weight:800; color:#fff; margin-bottom:9px; letter-spacing:-.015em; position:relative; z-index:1; }
+    .feat-desc { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:14px; position:relative; z-index:1; }
+    .feat-tags { display:flex; flex-wrap:wrap; gap:5px; position:relative; z-index:1; }
+    .ftag {
+      font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px;
+      font-family:var(--ff-d); letter-spacing:.03em;
+    }
+    .ftag--free { background:rgba(34,197,94,.11); color:#4ade80; border:1px solid rgba(34,197,94,.25); }
+    .ftag--local{ background:rgba(30,240,212,.09); color:var(--ion); border:1px solid rgba(30,240,212,.2); }
+    .ftag--ai   { background:rgba(168,85,247,.11); color:#c084fc; border:1px solid rgba(168,85,247,.25); }
+    .ftag--net  { background:rgba(245,200,66,.09); color:var(--citrine); border:1px solid rgba(245,200,66,.22); }
+
+    /* ══════════════════════ HOW IT WORKS ══════════════════════ */
+    .how-sec {
+      position:relative; z-index:1; padding:0 28px 80px;
+      max-width:1140px; margin:0 auto; border-top:1px solid var(--border);
+      padding-top:72px;
+    }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:52px; position:relative; }
+    .steps::before {
+      content:''; position:absolute; top:26px; left:12.5%; right:12.5%; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(245,200,66,.3) 25%,rgba(30,240,212,.3) 55%,rgba(255,92,53,.3) 80%,transparent);
+      z-index:0;
+    }
+    .step { text-align:center; position:relative; z-index:1; }
+    .step-num {
+      width:52px; height:52px; border-radius:14px; margin:0 auto 18px;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--ff-d); font-size:19px; font-weight:800; color:#fff;
+      box-shadow:0 0 0 5px rgba(8,9,15,.9);
+    }
+    .sn--1 { background:linear-gradient(135deg,#f5c842,#ff5c35); }
+    .sn--2 { background:linear-gradient(135deg,#ff5c35,#a855f7); }
+    .sn--3 { background:linear-gradient(135deg,#a855f7,#1ef0d4); }
+    .sn--4 { background:linear-gradient(135deg,#1ef0d4,#22c55e); }
+    .step-title { font-family:var(--ff-d); font-size:14px; font-weight:800; color:#fff; margin-bottom:8px; }
+    .step-desc { font-size:12.5px; color:var(--muted); line-height:1.65; }
+
+    /* ══════════════════════ PRIVACY ══════════════════════ */
+    .priv-sec {
+      position:relative; z-index:1; padding:72px 28px;
+      background:linear-gradient(180deg,transparent,rgba(30,240,212,.03),transparent);
+      border-top:1px solid var(--border);
+    }
+    .priv-inner { max-width:1140px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
+    .priv-visual { display:flex; align-items:center; justify-content:center; position:relative; padding:40px 0; }
+    .priv-shield {
+      width:140px; height:140px; border-radius:50%;
+      background:linear-gradient(135deg,rgba(30,240,212,.14),rgba(168,85,247,.1));
+      border:1.5px solid rgba(30,240,212,.25);
+      display:flex; align-items:center; justify-content:center; font-size:52px;
+      box-shadow:0 0 60px rgba(30,240,212,.1), 0 0 120px rgba(30,240,212,.05);
+      animation:floatY 5s ease-in-out infinite;
+    }
+    .priv-ring {
+      position:absolute; width:220px; height:220px; border-radius:50%;
+      border:1px dashed rgba(30,240,212,.18);
+    }
+    .priv-ring-dot {
+      position:absolute; top:50%; left:50%; width:10px; height:10px; border-radius:50%;
+      background:var(--ion); margin:-5px 0 0 -5px; transform:translateX(110px);
+      box-shadow:0 0 12px rgba(30,240,212,.9);
+    }
+    .priv-ring-wrap { position:absolute; width:220px; height:220px; animation:spinRing 14s linear infinite; }
+    .priv-points { display:flex; flex-direction:column; gap:14px; margin-top:28px; }
+    .priv-point {
+      display:flex; align-items:flex-start; gap:14px;
+      padding:16px 18px; border-radius:14px;
+      background:var(--card); border:1px solid var(--border);
+      transition:border-color .2s;
+    }
+    .priv-point:hover { border-color:rgba(30,240,212,.2); }
+    .priv-icon {
+      width:34px; height:34px; border-radius:9px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:15px;
+    }
+    .pi--lock  { background:rgba(30,240,212,.1);  border:1px solid rgba(30,240,212,.2); }
+    .pi--ai    { background:rgba(168,85,247,.1);  border:1px solid rgba(168,85,247,.2); }
+    .pi--net   { background:rgba(245,200,66,.1);  border:1px solid rgba(245,200,66,.2); }
+    .priv-text strong { font-family:var(--ff-d); font-size:13px; font-weight:700; color:#fff; display:block; margin-bottom:3px; }
+    .priv-text span { font-size:12px; color:var(--muted); line-height:1.55; }
+
+    /* ══════════════════════ USE CASES ══════════════════════ */
+    .uc-sec { position:relative; z-index:1; padding:72px 28px; max-width:1140px; margin:0 auto; border-top:1px solid var(--border); }
+    .uc-pills { display:flex; flex-wrap:wrap; gap:10px; margin-top:32px; }
+    .uc-pill {
+      display:flex; align-items:center; gap:7px;
+      padding:9px 16px; border-radius:99px;
+      background:var(--card); border:1px solid var(--border);
+      font-size:13px; font-weight:600; color:var(--text);
+      transition:border-color .2s, background .2s, transform .2s;
+    }
+    .uc-pill:hover { border-color:rgba(245,200,66,.38); background:rgba(245,200,66,.05); transform:translateY(-2px); }
+    .uc-emoji { font-size:15px; }
+
+    /* ══════════════════════ CTA ══════════════════════ */
+    .cta-sec { position:relative; z-index:1; padding:88px 28px; }
+    .cta-inner {
+      max-width:740px; margin:0 auto; text-align:center;
+      background:var(--card); border:1px solid rgba(245,200,66,.18);
+      border-radius:28px; padding:60px 52px; position:relative; overflow:hidden;
+    }
+    .cta-inner::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 50% 0%, rgba(245,200,66,.07), transparent 60%);
+      pointer-events:none;
+    }
+    .cta-inner::after {
+      content:''; position:absolute; top:0; left:20%; right:20%; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(245,200,66,.4),transparent);
+    }
+    .cta-h2 {
+      font-family:var(--ff-d); font-size:clamp(26px,4vw,42px); font-weight:800;
+      letter-spacing:-.03em; color:#fff; margin-bottom:14px; position:relative; z-index:1;
+    }
+    .cta-sub { font-size:15.5px; color:var(--muted); margin-bottom:32px; line-height:1.65; position:relative; z-index:1; }
+    .cta-note { font-size:12px; color:var(--faint); margin-top:16px; position:relative; z-index:1; }
+
+    /* ══════════════════════ FOOTER ══════════════════════ */
+    .footer {
+      position:relative; z-index:1; border-top:1px solid var(--border); padding:40px 28px;
+    }
+    .footer-inner {
+      max-width:1140px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;
+    }
+    .foot-copy { font-size:12px; color:var(--faint); }
+    .foot-links { display:flex; align-items:center; gap:4px; }
+    .foot-link { font-size:12px; color:var(--faint); padding:4px 10px; border-radius:6px; transition:color .18s; }
+    .foot-link:hover { color:var(--muted); }
+
+    /* ══════════════════════ RESPONSIVE ══════════════════════ */
+    @media (max-width:900px) {
+      .hero { grid-template-columns:1fr; gap:40px; padding-top:60px; }
+      .hero-h1 { font-size:clamp(32px,7vw,52px); }
+      .feat-grid { grid-template-columns:repeat(2,1fr); }
+      .steps { grid-template-columns:repeat(2,1fr); }
+      .steps::before { display:none; }
+      .priv-inner { grid-template-columns:1fr; gap:40px; }
+      .priv-visual { order:-1; }
+      .demo-grid { grid-template-columns:1fr; }
+      .stats-grid { grid-template-columns:repeat(2,1fr); }
+      .hl-grid { grid-template-columns:1fr 1fr; }
+      .cta-inner { padding:40px 28px; }
+      .honesty-card { grid-template-columns:1fr; }
+    }
+    @media (max-width:600px) {
+      .feat-grid { grid-template-columns:1fr; }
+      .steps { grid-template-columns:1fr; }
+      .hero { padding:52px 20px 40px; }
+      .feat-sec, .how-sec, .priv-sec, .uc-sec, .cta-sec { padding-left:20px; padding-right:20px; }
+      .nav-links .nav-link { display:none; }
+      .cta-inner { padding:32px 20px; }
+      .footer-inner { flex-direction:column; text-align:center; }
+      .hl-grid { grid-template-columns:1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- Ambient background -->
+  <div class="ambient">
+    <div class="blob"></div>
+    <div class="blob"></div>
+    <div class="blob"></div>
+  </div>
+  <div class="noise-lp"></div>
+
+  <div id="landing-page">
+
+    <!-- NAV -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <div class="logo-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+            </svg>
+          </div>
+          <span class="logo-name">DocStitcher</span>
+        </div><!-- /.logo -->
+        <div class="nav-links">
+          <a href="#features" class="nav-link" id="lp-nav-features">Features</a>
+          <a href="#how" class="nav-link" id="lp-nav-how">How It Works</a>
+          <a href="#privacy" class="nav-link" id="lp-nav-privacy">Privacy</a>
+          <button id="langPickerBtn" onclick="Lang.openPicker()" class="nav-link" style="cursor:pointer;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 12px;">🌐 EN</button>
+          <button class="nav-cta" onclick="window.location.href='app.html'" id="lp-nav-cta">Open App — Free</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- TICKER -->
+    <div class="ticker">
+      <div class="ticker-track" id="lpTicker"></div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-eyebrow"><div class="ey-dot"></div><span id="lp-hero-eyebrow-text">🇮🇳 Made in India &nbsp;·&nbsp; Your Files Never Leave Your Device</span></div>
+        <h1 class="hero-h1" id="lp-hero-h1">
+          Document PDFs &amp;<br>
+          Passport Photos,<br>
+          <span class="h1-grad">Done Instantly.</span>
+        </h1>
+        <p class="hero-sub">
+          <span id="lp-hero-sub">Stitch front &amp; back scans into one clean A4 PDF. Make passport photos. Remove backgrounds. Compress PDFs. Seven tools — all running right inside your browser.</span> <em style="color:var(--text);font-style:normal" id="lp-hero-sub-em">Your files never touch a server.</em>
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="window.location.href='app.html'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="lp-hero-cta">Open App — It's Free</span>
+          </button>
+          <a href="#features" class="btn-ghost" id="lp-hero-ghost">See All Tools ↓</a>
+        </div>
+        <p class="hero-note"><span>No account needed.</span> &nbsp;·&nbsp; <span>No file uploads.</span> &nbsp;·&nbsp; <span>Works in any browser.</span></p>
+      </div>
+
+      <!-- Animated document assembler -->
+      <div class="hero-right">
+        <div class="doc-assembler">
+          <div class="da-bar">
+            <div class="da-dot"></div><div class="da-dot"></div><div class="da-dot"></div>
+            <span class="da-title">Document Stitcher · Live Preview</span>
+          </div>
+          <div class="a4-page">
+            <div class="a4-label">A4 · Portrait · Two-Sided PDF</div>
+            <div class="a4-slots">
+              <div class="a4-slot a4-slot-front">
+                <img src="assets/frontv.png" alt="Front" onerror="this.style.display='none'">
+                <div class="a4-slot-lbl">Front Side</div>
+              </div>
+              <div class="a4-slot a4-slot-back">
+                <img src="assets/backv.png" alt="Back" onerror="this.style.display='none'">
+                <div class="a4-slot-lbl">Back Side</div>
+              </div>
+            </div>
+            <div class="a4-sig">
+              <span class="a4-sig-lbl">✒ Signature Zone — Arrow-Key Placeable</span>
+              <span class="a4-sig-cursor">|</span>
+            </div>
+            <div class="a4-actions">
+              <div class="a4-action a4-action--dl">↓ PDF</div>
+              <div class="a4-action a4-action--sec">JPG</div>
+              <div class="a4-action a4-action--sec">PNG</div>
+            </div>
+          </div>
+          <!-- floating badges -->
+          <div class="da-badge da-badge--1">✅ Zero Server Upload</div>
+          <div class="da-badge da-badge--2">⚡ Instant, Local</div>
+          <div class="da-badge da-badge--3">🔒 100% Private</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <div class="stats-strip rv">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-num">7<em>+</em></div><div class="stat-lbl">Built-in Tools</div></div>
+        <div class="stat"><div class="stat-num">100<em>%</em></div><div class="stat-lbl">Local Processing</div></div>
+        <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Languages</div></div>
+        <div class="stat"><div class="stat-num">0</div><div class="stat-lbl">Files Sent to Server</div></div>
+      </div>
+    </div>
+
+    <!-- HONESTY STRIP — replaces false "works offline" claim -->
+    <div class="honesty-strip rv rv1">
+      <div class="honesty-card">
+        <div class="honesty-icon">💡</div>
+        <div>
+          <div class="honesty-title">Honest about how DocStitcher works</div>
+          <div class="honesty-body">
+            <strong>Your documents are 100% private</strong> — every crop, compress, and export runs entirely inside your browser using JavaScript. No file ever touches our servers. Not even for a millisecond. However, DocStitcher <strong>does require an active internet connection</strong> to load (we serve ads to cover hosting and keep the app completely free for you). The AI background remover downloads its model once on first use, and individual tools work locally after that — but the app itself needs connectivity to start.
+          </div>
+          <div class="honesty-pills">
+            <span class="h-pill h-pill--yes">✓ Files stay on your device</span>
+            <span class="h-pill h-pill--yes">✓ Zero server file uploads</span>
+            <span class="h-pill h-pill--yes">✓ On-device AI model</span>
+            <span class="h-pill h-pill--ad">📢 Ad-supported · keeps it free</span>
+            <span class="h-pill h-pill--no">⚠ Requires internet to load</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGHLIGHTS -->
+    <div class="hl-wrap">
+      <div class="hl-grid">
+        <div class="hl-card hl-card--india rv">
+          <span class="hl-emoji">🇮🇳</span>
+          <div class="hl-title">Proudly Made in India</div>
+          <div class="hl-desc">Built by an Indian developer for everyday Indian document needs — Aadhaar, PAN card, driving licence, passport photos — with zero dependency on foreign servers.</div>
+          <span class="hl-badge hl-badge--india">🏆 Built in Bharat</span>
+        </div>
+        <div class="hl-card hl-card--secure rv rv2">
+          <span class="hl-emoji">🛡️</span>
+          <div class="hl-title">Your Files Are 100% Private</div>
+          <div class="hl-desc">Not a single byte of your Aadhaar, PAN card, or photo is ever sent to any server. Every edit runs inside your browser tab. Close it — nothing is retained.</div>
+          <span class="hl-badge hl-badge--secure">🔒 100% Local Processing</span>
+        </div>
+        <div class="hl-card hl-card--speed rv rv3">
+          <span class="hl-emoji">⚡</span>
+          <div class="hl-title">Done in Clicks. Not Minutes.</div>
+          <div class="hl-desc">Upload → Edit → Download. No server queues, no waiting screens. A passport photo print sheet that takes 10 minutes elsewhere takes under 60 seconds here.</div>
+          <span class="hl-badge hl-badge--speed">⚡ Instant Every Time</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEMO GRID -->
+    <section class="demo-sec" id="demo">
+      <div class="demo-grid">
+
+        <div class="demo-card rv">
+          <div class="dc-title"><div class="dc-dot" style="background:#f5c842"></div>Document Stitcher</div>
+          <div style="background:#fff;border-radius:8px;padding:12px;box-shadow:0 12px 36px rgba(0,0,0,.45)">
+            <div style="font-size:8px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">A4 · Portrait · Two-Sided PDF</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px">
+              <div style="background:linear-gradient(145deg,#dbeafe,#bfdbfe);border-radius:5px;aspect-ratio:3/4;position:relative;overflow:hidden">
+                <img src="assets/cardA.png" alt="Front" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+                <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:6.5px;font-weight:800;color:rgba(0,0,0,.35);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;z-index:1">Front</div>
+              </div>
+              <div style="background:linear-gradient(145deg,#fce7f3,#fbcfe8);border-radius:5px;aspect-ratio:3/4;position:relative;overflow:hidden">
+                <img src="assets/cardB.png" alt="Back" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+                <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:6.5px;font-weight:800;color:rgba(0,0,0,.35);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;z-index:1">Back</div>
+              </div>
+            </div>
+            <div style="border:1.5px dashed rgba(255,92,53,.35);border-radius:5px;padding:6px 8px;margin-bottom:7px;font-size:7px;font-weight:800;color:rgba(255,92,53,.6);text-transform:uppercase;letter-spacing:.06em">✒ Signature Zone</div>
+            <div style="display:flex;gap:5px">
+              <div style="flex:1;padding:6px 0;border-radius:6px;background:linear-gradient(90deg,#ff5c35,#f5c842);font-size:8.5px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:.05em;color:#0c111d">↓ PDF</div>
+              <div style="flex:1;padding:6px 0;border-radius:6px;background:#f0f4ff;font-size:8.5px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:.05em;color:#64748b">JPG</div>
+              <div style="flex:1;padding:6px 0;border-radius:6px;background:#f0f4ff;font-size:8.5px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:.05em;color:#64748b">PNG</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:6px">
+            <span style="font-size:10.5px;color:rgba(245,200,66,.7);background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.15);border-radius:99px;padding:3px 10px;font-weight:700">📄 Portrait &amp; Landscape</span>
+            <span style="font-size:10.5px;color:rgba(30,240,212,.7);background:rgba(30,240,212,.08);border:1px solid rgba(30,240,212,.15);border-radius:99px;padding:3px 10px;font-weight:700">🎯 Keyboard Signature Placement</span>
+            <span style="font-size:10.5px;color:rgba(168,85,247,.7);background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.15);border-radius:99px;padding:3px 10px;font-weight:700">📁 PDF Input Supported</span>
+          </div>
+        </div>
+
+        <div class="demo-card rv rv2">
+          <div class="dc-title"><div class="dc-dot" style="background:#1ef0d4"></div>Photo Maker — A4 Print Sheet</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#f9d4c0 20%,#f7967a 100%);position:relative;overflow:hidden"><img src="assets/photo1.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#c0d4f9 20%,#7a96f7 100%);position:relative;overflow:hidden"><img src="assets/photo2.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#f9d4c0 20%,#f7967a 100%);position:relative;overflow:hidden"><img src="assets/photo3.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#c0d4f9 20%,#7a96f7 100%);position:relative;overflow:hidden"><img src="assets/photo4.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#c0d4f9 20%,#7a96f7 100%);position:relative;overflow:hidden"><img src="assets/photo5.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#f9d4c0 20%,#f7967a 100%);position:relative;overflow:hidden"><img src="assets/photo6.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#c0d4f9 20%,#7a96f7 100%);position:relative;overflow:hidden"><img src="assets/photo7.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+            <div style="aspect-ratio:3/4;border-radius:6px;background:linear-gradient(160deg,#f9d4c0 20%,#f7967a 100%);position:relative;overflow:hidden"><img src="assets/photo8.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:16px;opacity:.55">👤</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">4 persons × multiple photos · White / blue / custom backgrounds</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(30,240,212,.1);border:1px solid rgba(30,240,212,.22);border-radius:99px;padding:4px 11px;font-size:10.5px;font-weight:700;color:var(--ion)">✅ BG Removed</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(30,240,212,.1);border:1px solid rgba(30,240,212,.22);border-radius:99px;padding:4px 11px;font-size:10.5px;font-weight:700;color:var(--ion)">✅ Cropped</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(30,240,212,.1);border:1px solid rgba(30,240,212,.22);border-radius:99px;padding:4px 11px;font-size:10.5px;font-weight:700;color:var(--ion)">✅ Print-Ready 300 DPI</span>
+          </div>
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
+            <span style="font-size:10.5px;color:rgba(255,92,53,.7);background:rgba(255,92,53,.08);border:1px solid rgba(255,92,53,.15);border-radius:99px;padding:3px 10px;font-weight:700">📐 Exact sizes: 2.5×3cm, 2×2in</span>
+            <span style="font-size:10.5px;color:rgba(168,85,247,.7);background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.15);border-radius:99px;padding:3px 10px;font-weight:700">🤖 AI Background Remover</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="feat-sec" id="features">
+      <div class="feat-head rv">
+        <div class="sec-eye" id="lp-sec-eye-feat">Everything Included</div>
+        <h2 class="sec-h2" id="lp-sec-h2-feat">All the tools you need,<br>right in your browser.</h2>
+        <p class="sec-sub" id="lp-sec-sub-feat">Seven powerful tools — no installs, no sign-up, no credit card. Open the app and start immediately.</p>
+      </div>
+
+      <div class="feat-grid">
+
+        <div class="feat-card fc--amber rv rv1">
+          <div class="feat-icon fi--amber">📸</div>
+          <div class="feat-title">Passport &amp; ID Photo Maker</div>
+          <div class="feat-desc">Upload any photo, crop precisely, remove background using on-device AI, set exact dimensions (2.5×3cm, 2×2in, 35×45mm+), and print multiple copies on one A4 sheet. Up to 4 persons at once.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+            <span class="ftag ftag--ai">AI Powered</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--coral rv rv2">
+          <div class="feat-icon fi--coral">📄</div>
+          <div class="feat-title">Document Stitcher</div>
+          <div class="feat-desc">Combine front &amp; back scans of any document — Aadhaar, PAN card, driving licence, passport — into one clean A4 PDF. Portrait &amp; landscape, one-sided &amp; two-sided. Place your signature precisely with arrow keys.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--teal rv rv3">
+          <div class="feat-icon fi--teal">✂️</div>
+          <div class="feat-title">AI Background Remover</div>
+          <div class="feat-desc">Remove background from any photo using a neural network that runs entirely on your device. No API key, no photo sent anywhere. Fill with white, blue, a custom colour, or keep transparent.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+            <span class="ftag ftag--ai">On-Device AI</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--purple rv rv1">
+          <div class="feat-icon fi--purple">🗜</div>
+          <div class="feat-title">PDF Compressor</div>
+          <div class="feat-desc">Reduce any PDF's file size instantly. Upload a 10 MB scan, drag the quality slider, target a specific KB size, and download a compressed version — completely local, nothing leaves your browser.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--green rv rv2">
+          <div class="feat-icon fi--green">📚</div>
+          <div class="feat-title">Bulk PDF Builder</div>
+          <div class="feat-desc">Upload up to 100 images or PDFs, drag to reorder, preview each page, then download as one combined PDF — perfect for document sets, scanned booklets, or portfolios.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--blue rv rv3">
+          <div class="feat-icon fi--blue">🛠</div>
+          <div class="feat-title">Multi-Tool Image Editor</div>
+          <div class="feat-desc">Crop, rotate, flip, compress, convert, resize to exact dimensions, and enhance brightness — all in one pass. Export as JPEG, WebP, or PNG. Send directly to Document Stitcher without downloading.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--amber rv rv1" style="grid-column:1">
+          <div class="feat-icon fi--amber">💧</div>
+          <div class="feat-title">Text Watermark Tool</div>
+          <div class="feat-desc">Add a custom text watermark to any image — choose font size, opacity, rotation, colour, and position. Download or send straight to the stitcher.</div>
+          <div class="feat-tags">
+            <span class="ftag ftag--free">✓ Free</span>
+            <span class="ftag ftag--local">🔒 Local</span>
+          </div>
+        </div>
+
+        <div class="feat-card fc--teal rv rv2" style="grid-column:2/span 2">
+          <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+            <div style="flex:1;min-width:180px">
+              <div class="feat-icon fi--teal">🌐</div>
+              <div class="feat-title">3-Language Support</div>
+              <div class="feat-desc">Full interface in English, हिन्दी (Hindi), and বাংলা (Bengali). Switch anytime via the language picker. Every button and tooltip is fully translated.</div>
+              <div class="feat-tags"><span class="ftag ftag--free">✓ Free</span></div>
+            </div>
+            <div style="flex:1;min-width:180px">
+              <div class="feat-icon fi--teal" style="background:linear-gradient(135deg,rgba(245,200,66,.14),rgba(255,92,53,.1))">📢</div>
+              <div class="feat-title">Free Because of Ads</div>
+              <div class="feat-desc">DocStitcher is free because it runs ads. Ads require an internet connection to load. Your <em>files</em> are always processed locally and privately — only the ad network connects online, never your documents.</div>
+              <div class="feat-tags">
+                <span class="ftag ftag--net">📢 Ad-supported</span>
+                <span class="ftag ftag--local">🔒 Files Stay Local</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-sec" id="how">
+      <div class="rv">
+        <div class="sec-eye" id="lp-sec-eye-how">Simple Process</div>
+        <h2 class="sec-h2" id="lp-sec-h2-how">Ready in four steps.</h2>
+        <p class="sec-sub" id="lp-sec-sub-how">No complicated software. No account forms. Open the app and everything works immediately.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step rv rv1">
+          <div class="step-num sn--1">1</div>
+          <div class="step-title" id="lp-step1-title">Open the App</div>
+          <div class="step-desc" id="lp-step1-desc">Click "Open App" — no sign-up, no email form, no password required. It opens directly in your browser.</div>
+        </div>
+        <div class="step rv rv2">
+          <div class="step-num sn--2">2</div>
+          <div class="step-title" id="lp-step2-title">Upload Your Files</div>
+          <div class="step-desc" id="lp-step2-desc">Drag and drop your document scans, photos, or PDFs. Everything processes inside your browser — nothing is sent to our servers.</div>
+        </div>
+        <div class="step rv rv3">
+          <div class="step-num sn--3">3</div>
+          <div class="step-title" id="lp-step3-title">Edit &amp; Arrange</div>
+          <div class="step-desc" id="lp-step3-desc">Crop, rotate, remove background, place signatures, compress, reorder pages — full editing without leaving the page.</div>
+        </div>
+        <div class="step rv rv4">
+          <div class="step-num sn--4">4</div>
+          <div class="step-title" id="lp-step4-title">Download or Print</div>
+          <div class="step-desc" id="lp-step4-desc">Save as PDF, JPG, or PNG. Or send directly to your printer. Print-ready at 300 DPI.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="priv-sec" id="privacy">
+      <div class="priv-inner">
+        <div>
+          <div class="sec-eye rv" id="lp-sec-eye-priv">Privacy First</div>
+          <h2 class="sec-h2 rv rv1" id="lp-sec-h2-priv">Your documents never leave your device.</h2>
+          <p class="sec-sub rv rv2" style="margin-bottom:0">DocStitcher processes everything inside your browser using JavaScript and Canvas APIs. No file — not your Aadhaar, PAN card, passport photo, or anything else — is ever sent to any server. The only network traffic is ads (which keep the app free) and the AI model download on first use.</p>
+
+          <div class="priv-points">
+            <div class="priv-point rv rv2">
+              <div class="priv-icon pi--lock">🔒</div>
+              <div class="priv-text">
+                <strong>Zero Server File Uploads</strong>
+                <span>All file processing happens using JavaScript and Canvas APIs, entirely in your tab. No backend, no cloud storage, no S3 bucket ever touches your files.</span>
+              </div>
+            </div>
+            <div class="priv-point rv rv3">
+              <div class="priv-icon pi--ai">🤖</div>
+              <div class="priv-text">
+                <strong>On-Device AI Model</strong>
+                <span>The background removal AI downloads once and runs locally in your browser. Your photos are never sent to any AI service or cloud API.</span>
+              </div>
+            </div>
+            <div class="priv-point rv rv4">
+              <div class="priv-icon pi--net">📢</div>
+              <div class="priv-text">
+                <strong>Why Internet Is Required</strong>
+                <span>The app itself and its ads require a live connection to load — this is how we keep DocStitcher free. Once loaded, all your document work stays 100% local and private.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="priv-visual rv rv3">
+          <div class="priv-ring-wrap">
+            <div class="priv-ring"></div>
+            <div class="priv-ring-dot"></div>
+          </div>
+          <div class="priv-shield">🛡️</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USE CASES -->
+    <section class="uc-sec">
+      <div class="rv">
+        <div class="sec-eye" id="lp-sec-eye-who">Who It's For</div>
+        <h2 class="sec-h2" id="lp-sec-h2-who">Perfect for everyday document tasks.</h2>
+      </div>
+      <div class="uc-pills">
+        <div class="uc-pill rv rv1"><span class="uc-emoji">🪪</span> Aadhaar Card PDF</div>
+        <div class="uc-pill rv rv1"><span class="uc-emoji">💳</span> PAN Card Upload</div>
+        <div class="uc-pill rv rv2"><span class="uc-emoji">🚗</span> Driving Licence PDF</div>
+        <div class="uc-pill rv rv2"><span class="uc-emoji">📘</span> Passport Photo Print</div>
+        <div class="uc-pill rv rv3"><span class="uc-emoji">🏛</span> Visa Application Photos</div>
+        <div class="uc-pill rv rv3"><span class="uc-emoji">🎓</span> Student ID Documents</div>
+        <div class="uc-pill rv rv4"><span class="uc-emoji">✈️</span> Travel Document Kit</div>
+        <div class="uc-pill rv rv4"><span class="uc-emoji">🏥</span> Medical &amp; Insurance Forms</div>
+        <div class="uc-pill rv rv5"><span class="uc-emoji">💼</span> Job Application Documents</div>
+        <div class="uc-pill rv rv5"><span class="uc-emoji">🏦</span> KYC Document Submission</div>
+        <div class="uc-pill rv rv1"><span class="uc-emoji">📋</span> Government Portal Uploads</div>
+        <div class="uc-pill rv rv2"><span class="uc-emoji">🖨</span> Print Shop Ready Files</div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-sec">
+      <div class="cta-inner rv">
+        <h2 class="cta-h2" id="lp-cta-h2">Start making your documents<br>the smart way.</h2>
+        <p class="cta-sub" id="lp-cta-sub">All 7 tools. Instant access. Your files stay on your device — always.</p>
+        <div style="position:relative;z-index:1">
+          <button class="btn-primary" onclick="window.location.href='app.html'" style="margin:0 auto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="lp-cta-btn">Open App — It's Free</span>
+          </button>
+        </div>
+        <p class="cta-note">No account · No credit card · No file uploads · Works in any modern browser · Ad-supported to stay free</p>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="logo">
+          <div class="logo-mark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+            </svg>
+          </div>
+          <span class="logo-name" style="font-size:15px">DocStitcher</span>
+        </div>
+        <p class="foot-copy">© 2026 DocStitcher &nbsp;·&nbsp; Built with ❤️ in India &nbsp;·&nbsp; Files processed 100% locally</p>
+        <div class="foot-links">
+          <a href="#features" class="foot-link">Features</a>
+          <a href="privacy.html" class="foot-link">Privacy</a>
+          <a href="terms.html" class="foot-link">Terms</a>
+          <a href="about.html" class="foot-link">About</a>
+          <a href="contact.html" class="foot-link">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /landing-page -->
+
+  <script src="assets/i18n.js"></script>
+  <!-- app.js is for app.html only -->
+
+  <script>
+    /* ── Ticker ── */
+    const ITEMS = [
+      '📸 Photo Maker', '📄 Document Stitcher', '✂️ AI Background Remover',
+      '🗜 PDF Compressor', '📚 Bulk PDF Builder', '🛠 Multi-Tool Editor',
+      '💧 Text Watermark', '🌐 3 Languages', '📢 Free · Ad-Supported',
+      '🔒 Zero File Uploads', '🎯 Keyboard Signature Placement', '300 DPI Print Quality',
+      '🇮🇳 Made in India', '⚡ Instant Processing', '🛡 Your Files Never Leave Your Device',
+    ];
+    const track = document.getElementById('lpTicker');
+    if (track) {
+      const full = [...ITEMS, ...ITEMS];
+      track.innerHTML = full.map(t =>
+        `<div class="ticker-item"><div class="t-dot"></div>${t}</div>`
+      ).join('');
+    }
+
+    /* ── Scroll-reveal ── */
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+    /* ── Smooth anchor scroll ── */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior:'smooth', block:'start' }); }
+      });
+    });
+
+    /* ── Animated stat counters ── */
+    const counters = document.querySelectorAll('.stat-num');
+    const cObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const text = el.textContent;
+        const num = parseInt(text);
+        const suffix = text.replace(String(num), '');
+        if (isNaN(num) || num === 0) { el.style.animation = 'countUp .5s ease both'; cObs.unobserve(el); return; }
+        let start = 0;
+        const dur = 1200;
+        const step = (ts) => {
+          if (!start) start = ts;
+          const prog = Math.min((ts - start) / dur, 1);
+          const ease = 1 - Math.pow(1 - prog, 3);
+          el.innerHTML = Math.round(ease * num) + '<em>' + suffix.replace(/\d/g,'') + '</em>';
+          if (prog < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        cObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(c => cObs.observe(c));
+  </script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c111d" />
+  <meta name="description" content="Contact DocStitcher — get help, report a bug, or send us feedback." />
+  <title>Contact Us — DocStitcher</title>
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --lp-bg:#0c111d;--lp-surface:#131929;--lp-card:#1a2236;
+      --lp-border:rgba(255,255,255,0.08);--lp-amber:#f9a825;--lp-coral:#f96b3f;
+      --lp-teal:#22d3c5;--lp-purple:#8b5cf6;--lp-green:#22c55e;
+      --lp-text:#f0f4ff;--lp-muted:#8492a6;--lp-faint:#4a5568;
+      --ff-disp:"Space Grotesk",sans-serif;--ff-body:"Plus Jakarta Sans",sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--lp-bg);color:var(--lp-text);font-family:var(--ff-body);font-size:15px;line-height:1.75;min-height:100vh}
+    a{color:var(--lp-amber);text-decoration:none}
+    a:hover{text-decoration:underline}
+    @keyframes lp-glow{0%,100%{opacity:0.4}50%{opacity:0.7}}
+    .lp-aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    .lp-aurora-blob{position:absolute;border-radius:50%;filter:blur(80px);animation:lp-glow 6s ease-in-out infinite}
+    .lp-aurora-blob:nth-child(1){width:600px;height:600px;top:-200px;left:-150px;background:radial-gradient(circle,rgba(34,211,197,0.09),transparent 70%)}
+    .lp-aurora-blob:nth-child(2){width:500px;height:500px;top:10%;right:-150px;background:radial-gradient(circle,rgba(249,168,37,0.07),transparent 70%);animation-delay:2s}
+    .lp-aurora-blob:nth-child(3){width:700px;height:700px;bottom:-200px;left:30%;background:radial-gradient(circle,rgba(139,92,246,0.07),transparent 70%);animation-delay:4s}
+    .lp-noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px}
+    .lp-nav{position:sticky;top:0;z-index:100;background:rgba(12,17,29,0.75);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--lp-border)}
+    .lp-nav-inner{max-width:1120px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .lp-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .lp-logo-mark{width:36px;height:36px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#f96b3f,#f9a825);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(249,107,63,0.4)}
+    .lp-logo-text{font-family:var(--ff-disp);font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.02em}
+    .lp-nav-cta{font-family:var(--ff-disp);font-size:13.5px;font-weight:700;color:#0c111d;background:linear-gradient(135deg,#f9a825,#f96b3f);padding:9px 20px;border-radius:10px;border:none;cursor:pointer;transition:transform .18s,box-shadow .18s;box-shadow:0 4px 14px rgba(249,107,63,0.35);white-space:nowrap}
+    .lp-nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(249,107,63,0.5)}
+    .page-wrap{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:64px 28px 96px}
+
+    /* Hero */
+    .doc-hero{text-align:center;margin-bottom:64px}
+    .doc-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(34,211,197,0.1);border:1px solid rgba(34,211,197,0.25);border-radius:99px;padding:6px 16px;margin-bottom:24px;font-family:var(--ff-disp);font-size:12px;font-weight:700;color:var(--lp-teal);letter-spacing:0.06em;text-transform:uppercase}
+    .doc-h1{font-family:var(--ff-disp);font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-0.03em;color:#fff;line-height:1.1;margin-bottom:16px}
+    .doc-hero-sub{font-size:15px;color:var(--lp-muted);max-width:520px;margin:0 auto}
+
+    /* Contact cards grid */
+    .contact-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:32px}
+    .contact-card{background:var(--lp-card);border:1px solid var(--lp-border);border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;gap:14px;transition:transform .28s cubic-bezier(.22,.68,0,1.2),border-color .22s,box-shadow .28s;position:relative;overflow:hidden}
+    .contact-card::before{content:'';position:absolute;inset:0;border-radius:20px;opacity:0;transition:opacity .3s;pointer-events:none}
+    .contact-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,0.3)}
+    .contact-card--teal:hover{border-color:rgba(34,211,197,0.35)}
+    .contact-card--teal::before{background:linear-gradient(135deg,rgba(34,211,197,0.04),transparent 60%);opacity:1}
+    .contact-card--amber:hover{border-color:rgba(249,168,37,0.35)}
+    .contact-card--amber::before{background:linear-gradient(135deg,rgba(249,168,37,0.04),transparent 60%);opacity:1}
+    .contact-card--purple:hover{border-color:rgba(139,92,246,0.35)}
+    .contact-card--purple::before{background:linear-gradient(135deg,rgba(139,92,246,0.04),transparent 60%);opacity:1}
+    .contact-card--coral:hover{border-color:rgba(249,107,63,0.35)}
+    .contact-card--coral::before{background:linear-gradient(135deg,rgba(249,107,63,0.04),transparent 60%);opacity:1}
+    .contact-card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .contact-card-icon--teal{background:rgba(34,211,197,0.12);border:1px solid rgba(34,211,197,0.2)}
+    .contact-card-icon--amber{background:rgba(249,168,37,0.12);border:1px solid rgba(249,168,37,0.2)}
+    .contact-card-icon--purple{background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2)}
+    .contact-card-icon--coral{background:rgba(249,107,63,0.12);border:1px solid rgba(249,107,63,0.2)}
+    .contact-card-title{font-family:var(--ff-disp);font-size:15.5px;font-weight:800;color:#fff;position:relative;z-index:1}
+    .contact-card-desc{font-size:13px;color:var(--lp-muted);line-height:1.65;position:relative;z-index:1}
+    .contact-card-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--ff-disp);font-size:13px;font-weight:700;color:var(--lp-amber);margin-top:4px;position:relative;z-index:1;transition:gap .18s}
+    .contact-card-link:hover{text-decoration:none;gap:10px}
+
+    /* Form section */
+    .contact-form-wrap{background:var(--lp-card);border:1px solid var(--lp-border);border-radius:20px;padding:44px;position:relative;overflow:hidden}
+    .contact-form-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(34,211,197,0.03),transparent 60%);pointer-events:none}
+    .form-section-title{font-family:var(--ff-disp);font-size:20px;font-weight:800;color:#fff;margin-bottom:6px}
+    .form-section-sub{font-size:13.5px;color:var(--lp-muted);margin-bottom:32px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .form-group{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+    .form-label{font-family:var(--ff-disp);font-size:12.5px;font-weight:700;color:var(--lp-muted);letter-spacing:0.04em;text-transform:uppercase}
+    .form-input,.form-select,.form-textarea{background:rgba(255,255,255,0.04);border:1.5px solid var(--lp-border);border-radius:12px;padding:13px 16px;font-family:var(--ff-body);font-size:14px;color:var(--lp-text);outline:none;transition:border-color .2s,background .2s;width:100%;resize:vertical}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--lp-faint)}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(34,211,197,0.5);background:rgba(34,211,197,0.04)}
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238492a6' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+    .form-select option{background:#1a2236;color:var(--lp-text)}
+    .form-textarea{min-height:120px}
+    .form-submit{display:inline-flex;align-items:center;gap:10px;font-family:var(--ff-disp);font-size:15px;font-weight:800;padding:16px 32px;border-radius:14px;background:linear-gradient(135deg,#22d3c5,#8b5cf6);color:#fff;border:none;cursor:pointer;box-shadow:0 8px 28px rgba(34,211,197,0.25);transition:transform .22s cubic-bezier(.22,.68,0,1.2),box-shadow .22s;margin-top:8px}
+    .form-submit:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 36px rgba(34,211,197,0.4)}
+
+    /* FAQ */
+    .faq-section{margin-top:32px}
+    .faq-title{font-family:var(--ff-disp);font-size:22px;font-weight:800;color:#fff;margin-bottom:20px}
+    .faq-item{background:var(--lp-card);border:1px solid var(--lp-border);border-radius:14px;padding:22px 24px;margin-bottom:12px;cursor:pointer;transition:border-color .22s}
+    .faq-item:hover{border-color:rgba(255,255,255,0.15)}
+    .faq-q{font-family:var(--ff-disp);font-size:14.5px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;user-select:none}
+    .faq-arrow{font-size:18px;color:var(--lp-muted);transition:transform .25s;flex-shrink:0}
+    .faq-a{font-size:13.5px;color:var(--lp-muted);line-height:1.75;margin-top:12px;display:none}
+    .faq-item.open .faq-arrow{transform:rotate(180deg)}
+    .faq-item.open .faq-a{display:block}
+    .faq-item.open{border-color:rgba(34,211,197,0.3)}
+
+    .lp-footer{position:relative;z-index:1;border-top:1px solid var(--lp-border);padding:40px 28px}
+    .lp-footer-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+    .lp-footer-copy{font-size:12.5px;color:var(--lp-faint)}
+    .lp-footer-links{display:flex;align-items:center;gap:6px}
+    .lp-footer-link{font-size:12.5px;color:var(--lp-faint);padding:4px 10px;border-radius:6px;transition:color .18s}
+    .lp-footer-link:hover{color:var(--lp-muted)}
+    @media(max-width:600px){.page-wrap{padding:40px 16px 72px}.contact-cards{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.contact-form-wrap{padding:28px 20px}.lp-footer-inner{flex-direction:column;text-align:center}}
+  </style>
+</head>
+<body>
+
+  <div class="lp-aurora">
+    <div class="lp-aurora-blob"></div>
+    <div class="lp-aurora-blob"></div>
+    <div class="lp-aurora-blob"></div>
+  </div>
+  <div class="lp-noise"></div>
+
+  <nav class="lp-nav">
+    <div class="lp-nav-inner">
+      <a href="index.html" class="lp-logo">
+        <div class="lp-logo-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+          </svg>
+        </div>
+        <span class="lp-logo-text">DocStitcher</span>
+      </a>
+      <button class="lp-nav-cta" onclick="window.location.href='app.html'">Open App</button>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- HERO -->
+    <div class="doc-hero">
+      <div class="doc-eyebrow">💬 Get in Touch</div>
+      <h1 class="doc-h1">Contact Us</h1>
+      <p class="doc-hero-sub">Have a question, found a bug, or want to say hi? We'd love to hear from you. We reply within 1–2 business days.</p>
+    </div>
+
+    <!-- CONTACT CARDS -->
+    <div class="contact-cards">
+      <div class="contact-card contact-card--teal">
+        <div class="contact-card-icon contact-card-icon--teal">📧</div>
+        <div class="contact-card-title">General Support</div>
+        <div class="contact-card-desc">For help with any tool, questions about features, or anything else about using DocStitcher.</div>
+        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+      </div>
+      <div class="contact-card contact-card--coral">
+        <div class="contact-card-icon contact-card-icon--coral">🐛</div>
+        <div class="contact-card-title">Bug Reports</div>
+        <div class="contact-card-desc">Found something that isn't working right? Please let us know — include your browser and the steps to reproduce it.</div>
+        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+      </div>
+      <div class="contact-card contact-card--amber">
+        <div class="contact-card-icon contact-card-icon--amber">💡</div>
+        <div class="contact-card-title">Feature Requests</div>
+        <div class="contact-card-desc">Have an idea for a new tool or improvement? We read every suggestion — many features came from user requests.</div>
+        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+      </div>
+      <div class="contact-card contact-card--purple">
+        <div class="contact-card-icon contact-card-icon--purple">⚖️</div>
+        <div class="contact-card-title">Privacy &amp; Legal</div>
+        <div class="contact-card-desc">For privacy policy questions, data concerns, DMCA notices, or legal matters related to DocStitcher.</div>
+        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+      </div>
+    </div>
+
+    <!-- CONTACT FORM -->
+    <div class="contact-form-wrap">
+      <div class="form-section-title">Send us a message</div>
+      <div class="form-section-sub">Fill in any details below, then send it straight to us via Gmail.</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="cf-name">Your Name</label>
+          <input class="form-input" type="text" id="cf-name" placeholder="Rahul Sharma" autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cf-email">Email Address</label>
+          <input class="form-input" type="email" id="cf-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cf-subject">Subject</label>
+        <select class="form-select" id="cf-subject">
+          <option value="">Select a topic…</option>
+          <option value="support">General Support</option>
+          <option value="bug">Bug Report</option>
+          <option value="feature">Feature Request</option>
+          <option value="privacy">Privacy / Legal</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cf-message">Message</label>
+        <textarea class="form-textarea" id="cf-message" placeholder="Describe your question or issue in detail. If it's a bug, please mention which browser you're using and what steps led to the problem."></textarea>
+      </div>
+
+      <a id="gmailSendBtn" href="#" target="_blank" rel="noopener" onclick="return prepGmailLink()" class="form-submit" style="text-decoration:none">
+        Email Us via Gmail ✉️
+      </a>
+
+      <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button id="copyMsgBtn" onclick="copyContactMessage()" type="button" style="display:inline-flex;align-items:center;gap:6px;font-family:var(--ff-disp);font-size:13px;font-weight:700;color:var(--lp-text);background:rgba(255,255,255,0.06);border:1.5px solid var(--lp-border);padding:10px 18px;border-radius:10px;cursor:pointer">📋 Copy message instead</button>
+        <span style="font-size:12.5px;color:var(--lp-faint)">Opens Gmail in a new tab with everything pre-filled — works on any device, no email app needed.</span>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section">
+      <div class="faq-title">Frequently Asked Questions</div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Is DocStitcher really free? <span class="faq-arrow">⌄</span></div>
+        <div class="faq-a">Yes, completely. Every tool — document stitcher, passport photo maker, background remover, compressor, bulk PDF builder, watermark tool, and image editor — is free with no hidden tiers or limits. Ads keep it running.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Does DocStitcher upload my files to a server? <span class="faq-arrow">⌄</span></div>
+        <div class="faq-a">No. Everything runs inside your browser using JavaScript. Your Aadhaar, PAN card, photos, or any other file never leaves your device. We have no backend that receives files.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Why does DocStitcher need an internet connection? <span class="faq-arrow">⌄</span></div>
+        <div class="faq-a">DocStitcher is free because it displays ads. Ads require an internet connection to load. Without ads, there would be no revenue to keep the app free and maintained. We appreciate your understanding.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Which browsers are supported? <span class="faq-arrow">⌄</span></div>
+        <div class="faq-a">DocStitcher works best on Chrome, Edge, and Firefox (latest versions). Safari on iOS and macOS is also supported. We recommend Chrome for the best experience on Android.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">The background removal isn't working well. What can I do? <span class="faq-arrow">⌄</span></div>
+        <div class="faq-a">The built-in background remover uses an on-device AI model that works best with clear, well-lit photos against a simple background. For complex images, you can enter your own remove.bg API key in the tool settings for much higher accuracy results.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Can I install DocStitcher as an app on my phone? <span class="faq-arrow">⌄</span></div>
+        <div class="faq-a">Yes! DocStitcher is a Progressive Web App (PWA). On Chrome for Android, tap the three-dot menu and select "Add to Home Screen". On iOS Safari, tap the Share button and choose "Add to Home Screen". Note that an internet connection is still required to use the app.</div>
+      </div>
+
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <a href="index.html" class="lp-logo" style="text-decoration:none">
+        <div class="lp-logo-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+          </svg>
+        </div>
+        <span class="lp-logo-text" style="font-size:15px">DocStitcher</span>
+      </a>
+      <p class="lp-footer-copy">© 2026 DocStitcher &nbsp;·&nbsp; Built with ❤️ in India</p>
+      <div class="lp-footer-links">
+        <a href="index.html" class="lp-footer-link">Home</a>
+        <a href="privacy.html" class="lp-footer-link">Privacy</a>
+        <a href="terms.html" class="lp-footer-link">Terms</a>
+        <a href="about.html" class="lp-footer-link">About</a>
+        <a href="contact.html" class="lp-footer-link">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/i18n.js"></script>
+  <script src="assets/app.js?v=9.0"></script>
+  <script>
+    const SUPPORT_EMAIL = 'docstitcherapp.xyzabc@gmail.com';
+
+    function toggleFaq(el) {
+      el.classList.toggle('open');
+    }
+
+    function buildContactText() {
+      const name    = document.getElementById('cf-name').value.trim();
+      const email   = document.getElementById('cf-email').value.trim();
+      const subject = document.getElementById('cf-subject').value;
+      const message = document.getElementById('cf-message').value.trim();
+
+      const subjectMap = {
+        support: 'General Support',
+        bug: 'Bug Report',
+        feature: 'Feature Request',
+        privacy: 'Privacy / Legal',
+        other: 'Other'
+      };
+      const subjectLabel = subjectMap[subject] || 'General Support';
+      const mailSubjectRaw = name ? `[DocStitcher] ${subjectLabel} — from ${name}` : `[DocStitcher] ${subjectLabel}`;
+
+      let bodyLines = [];
+      if (name)  bodyLines.push(`Name: ${name}`);
+      if (email) bodyLines.push(`Email: ${email}`);
+      bodyLines.push(`Subject: ${subjectLabel}`);
+      bodyLines.push('');
+      bodyLines.push('Message:');
+      bodyLines.push(message || '(write your message here)');
+      const mailBodyRaw = bodyLines.join('\n');
+
+      return { mailSubjectRaw, mailBodyRaw };
+    }
+
+    function prepGmailLink() {
+      const { mailSubjectRaw, mailBodyRaw } = buildContactText();
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(SUPPORT_EMAIL)}&su=${encodeURIComponent(mailSubjectRaw)}&body=${encodeURIComponent(mailBodyRaw)}`;
+      document.getElementById('gmailSendBtn').href = gmailUrl;
+      return true; // let the click proceed to open the freshly-set href
+    }
+
+    function copyContactMessage() {
+      const { mailSubjectRaw, mailBodyRaw } = buildContactText();
+      const text = `To: ${SUPPORT_EMAIL}\nSubject: ${mailSubjectRaw}\n\n${mailBodyRaw}`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyMsgBtn');
+        const original = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => { btn.textContent = original; }, 2000);
+      }).catch(() => {
+        alert('Could not copy automatically. Please select and copy the message manually.');
+      });
+    }
+  </script>
+</body>
+</html>

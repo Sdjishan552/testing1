@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c111d" />
+  <meta name="description" content="DocStitcher Terms of Service — the rules for using our free document tools." />
+  <title>Terms of Service — DocStitcher</title>
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --lp-bg:#0c111d;--lp-surface:#131929;--lp-card:#1a2236;
+      --lp-border:rgba(255,255,255,0.08);--lp-amber:#f9a825;--lp-coral:#f96b3f;
+      --lp-teal:#22d3c5;--lp-purple:#8b5cf6;--lp-text:#f0f4ff;
+      --lp-muted:#8492a6;--lp-faint:#4a5568;
+      --ff-disp:"Space Grotesk",sans-serif;--ff-body:"Plus Jakarta Sans",sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--lp-bg);color:var(--lp-text);font-family:var(--ff-body);font-size:15px;line-height:1.75;min-height:100vh}
+    a{color:var(--lp-amber);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .lp-aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    .lp-aurora-blob{position:absolute;border-radius:50%;filter:blur(80px)}
+    .lp-aurora-blob:nth-child(1){width:600px;height:600px;top:-200px;left:-150px;background:radial-gradient(circle,rgba(249,168,37,0.08),transparent 70%)}
+    .lp-aurora-blob:nth-child(2){width:500px;height:500px;top:10%;right:-150px;background:radial-gradient(circle,rgba(34,211,197,0.07),transparent 70%)}
+    .lp-aurora-blob:nth-child(3){width:700px;height:700px;bottom:-200px;left:30%;background:radial-gradient(circle,rgba(139,92,246,0.07),transparent 70%)}
+    .lp-noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px}
+    .lp-nav{position:sticky;top:0;z-index:100;background:rgba(12,17,29,0.75);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--lp-border)}
+    .lp-nav-inner{max-width:1120px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .lp-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .lp-logo-mark{width:36px;height:36px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#f96b3f,#f9a825);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(249,107,63,0.4)}
+    .lp-logo-text{font-family:var(--ff-disp);font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.02em}
+    .lp-nav-cta{font-family:var(--ff-disp);font-size:13.5px;font-weight:700;color:#0c111d;background:linear-gradient(135deg,#f9a825,#f96b3f);padding:9px 20px;border-radius:10px;border:none;cursor:pointer;transition:transform .18s,box-shadow .18s;box-shadow:0 4px 14px rgba(249,107,63,0.35);white-space:nowrap}
+    .lp-nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(249,107,63,0.5)}
+    .page-wrap{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:64px 28px 96px}
+    .doc-hero{text-align:center;margin-bottom:64px}
+    .doc-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(249,107,63,0.1);border:1px solid rgba(249,107,63,0.25);border-radius:99px;padding:6px 16px;margin-bottom:24px;font-family:var(--ff-disp);font-size:12px;font-weight:700;color:var(--lp-coral);letter-spacing:0.06em;text-transform:uppercase}
+    .doc-h1{font-family:var(--ff-disp);font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-0.03em;color:#fff;line-height:1.1;margin-bottom:16px}
+    .doc-hero-sub{font-size:15px;color:var(--lp-muted);max-width:520px;margin:0 auto}
+    .doc-updated{margin-top:14px;font-size:12px;color:var(--lp-faint)}
+    .doc-card{background:var(--lp-card);border:1px solid var(--lp-border);border-radius:20px;padding:40px 44px;margin-bottom:24px;position:relative;overflow:hidden}
+    .doc-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(249,107,63,0.03),transparent 60%);pointer-events:none}
+    .doc-section{margin-bottom:36px}
+    .doc-section:last-child{margin-bottom:0}
+    .doc-section-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#f96b3f,#8b5cf6);font-family:var(--ff-disp);font-size:12px;font-weight:800;color:#fff;margin-right:10px;flex-shrink:0;vertical-align:middle}
+    .doc-section-title{font-family:var(--ff-disp);font-size:17px;font-weight:800;color:#fff;margin-bottom:14px;display:flex;align-items:center}
+    .doc-section-body{font-size:14px;color:var(--lp-muted);line-height:1.8}
+    .doc-section-body p{margin-bottom:12px}
+    .doc-section-body p:last-child{margin-bottom:0}
+    .doc-section-body ul{padding-left:20px;margin-bottom:12px}
+    .doc-section-body ul li{margin-bottom:6px}
+    .doc-section-body strong{color:var(--lp-text)}
+    .doc-section-body a{color:var(--lp-amber)}
+    .doc-callout{background:rgba(249,107,63,0.07);border:1px solid rgba(249,107,63,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;gap:14px;align-items:flex-start}
+    .doc-callout-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+    .doc-callout-text{font-size:13.5px;color:var(--lp-muted);line-height:1.7}
+    .doc-callout-text strong{color:var(--lp-coral);display:block;margin-bottom:4px;font-family:var(--ff-disp);font-size:14px}
+    .doc-divider{height:1px;background:var(--lp-border);margin:28px 0}
+    .lp-footer{position:relative;z-index:1;border-top:1px solid var(--lp-border);padding:40px 28px}
+    .lp-footer-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+    .lp-footer-copy{font-size:12.5px;color:var(--lp-faint)}
+    .lp-footer-links{display:flex;align-items:center;gap:6px}
+    .lp-footer-link{font-size:12.5px;color:var(--lp-faint);padding:4px 10px;border-radius:6px;transition:color .18s}
+    .lp-footer-link:hover{color:var(--lp-muted)}
+    @media(max-width:600px){.page-wrap{padding:40px 16px 72px}.doc-card{padding:28px 20px}.lp-footer-inner{flex-direction:column;text-align:center}}
+  </style>
+</head>
+<body>
+
+  <div class="lp-aurora">
+    <div class="lp-aurora-blob"></div>
+    <div class="lp-aurora-blob"></div>
+    <div class="lp-aurora-blob"></div>
+  </div>
+  <div class="lp-noise"></div>
+
+  <nav class="lp-nav">
+    <div class="lp-nav-inner">
+      <a href="index.html" class="lp-logo">
+        <div class="lp-logo-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+          </svg>
+        </div>
+        <span class="lp-logo-text">DocStitcher</span>
+      </a>
+      <button class="lp-nav-cta" onclick="window.location.href='app.html'">Open App</button>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+
+    <div class="doc-hero">
+      <div class="doc-eyebrow">📋 Legal</div>
+      <h1 class="doc-h1">Terms of Service</h1>
+      <p class="doc-hero-sub">By using DocStitcher you agree to these terms. They're written to be readable — no legalese.</p>
+      <p class="doc-updated">Last updated: June 28, 2026</p>
+    </div>
+
+    <div class="doc-callout">
+      <div class="doc-callout-icon">⚡</div>
+      <div class="doc-callout-text">
+        <strong>Plain English first</strong>
+        DocStitcher is a free tool. Use it to make PDFs, process photos, and handle your documents. Don't use it for anything illegal or harmful. That's the gist. The full details are below.
+      </div>
+    </div>
+
+    <div class="doc-card">
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">1</span>Acceptance of Terms</div>
+        <div class="doc-section-body">
+          <p>By accessing or using DocStitcher ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service. These terms apply to all visitors and users.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">2</span>Description of Service</div>
+        <div class="doc-section-body">
+          <p>DocStitcher is a free, browser-based document utility that allows you to:</p>
+          <ul>
+            <li>Stitch document scans into A4 PDFs</li>
+            <li>Create passport and ID photos</li>
+            <li>Remove image backgrounds using on-device AI</li>
+            <li>Compress, crop, rotate, and convert images and PDFs</li>
+            <li>Add watermarks and signatures to documents</li>
+          </ul>
+          <p>All processing occurs locally in your browser. The Service requires an active internet connection to load and to display advertisements that fund the free service.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">3</span>Permitted Use</div>
+        <div class="doc-section-body">
+          <p>You may use DocStitcher for personal, educational, and professional document processing. You agree <strong>not</strong> to:</p>
+          <ul>
+            <li>Use the Service to create fraudulent, forged, or falsified documents</li>
+            <li>Use the Service to violate any applicable law or regulation</li>
+            <li>Attempt to reverse-engineer, decompile, or tamper with the Service</li>
+            <li>Use automated tools to scrape or abuse the Service</li>
+            <li>Attempt to interfere with, block, or hide advertisements served on the Service in a manner that violates applicable platform or advertising-network policies</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">4</span>Intellectual Property</div>
+        <div class="doc-section-body">
+          <p>The DocStitcher name, logo, UI design, and source code are the property of DocStitcher and are protected under applicable intellectual property laws. You may not copy, modify, distribute, or create derivative works without explicit written permission.</p>
+          <p>The documents and files you process remain entirely your own. We claim no ownership over any content you create using the Service.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">5</span>Advertising</div>
+        <div class="doc-section-body">
+          <p>DocStitcher is funded through advertising provided by Google AdSense. Advertisements are displayed during normal use of the Service. By using the Service, you acknowledge that ads are an integral part of the free offering. We are not responsible for the content of third-party advertisements.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">6</span>Disclaimer of Warranties</div>
+        <div class="doc-section-body">
+          <p>The Service is provided "as is" and "as available" without warranties of any kind, express or implied. We do not warrant that the Service will be uninterrupted, error-free, or produce perfectly accurate output for all document types.</p>
+          <p><strong>Important:</strong> DocStitcher is a convenience tool. Do not rely solely on it for legally critical document submissions without verifying the output meets the requirements of the relevant authority.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">7</span>Limitation of Liability</div>
+        <div class="doc-section-body">
+          <p>To the maximum extent permitted by applicable law, DocStitcher and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of or inability to use the Service.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">8</span>Changes to Terms</div>
+        <div class="doc-section-body">
+          <p>We reserve the right to modify these Terms at any time. Changes take effect when posted to this page with an updated date. Your continued use of the Service after changes constitutes acceptance.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">9</span>Governing Law</div>
+        <div class="doc-section-body">
+          <p>These Terms shall be governed by and construed in accordance with the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts located in India.</p>
+        </div>
+      </div>
+
+      <div class="doc-divider"></div>
+
+      <div class="doc-section">
+        <div class="doc-section-title"><span class="doc-section-num">10</span>Contact</div>
+        <div class="doc-section-body">
+          <p>Questions about these Terms? Reach us at:<br>
+          📧 <a href="mailto:docstitcherapp.xyzabc@gmail.com">docstitcherapp.xyzabc@gmail.com</a></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <a href="index.html" class="lp-logo" style="text-decoration:none">
+        <div class="lp-logo-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+          </svg>
+        </div>
+        <span class="lp-logo-text" style="font-size:15px">DocStitcher</span>
+      </a>
+      <p class="lp-footer-copy">© 2026 DocStitcher &nbsp;·&nbsp; Built with ❤️ in India</p>
+      <div class="lp-footer-links">
+        <a href="index.html" class="lp-footer-link">Home</a>
+        <a href="privacy.html" class="lp-footer-link">Privacy</a>
+        <a href="terms.html" class="lp-footer-link">Terms</a>
+        <a href="about.html" class="lp-footer-link">About</a>
+        <a href="contact.html" class="lp-footer-link">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/i18n.js"></script>
+  <script src="assets/app.js?v=9.0"></script>
+</body>
+</html>

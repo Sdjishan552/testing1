@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fffaf5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="DocStitcher" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>DocStitcher — Single-Doc Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="assets/style.css?v=8.2" />
+  <style>
+/* ==========================================================
+       File Access Gate + Privacy Notice — added styles
+       ========================================================== */
+    #privacyBanner {
+      position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 300000;
+      max-width: 460px; margin: 0 auto; display: none;
+      animation: bannerSlideUp .35s cubic-bezier(.2,.9,.3,1.1);
+    }
+    #privacyBanner.show { display: block; }
+    @keyframes bannerSlideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .privacy-banner-card{
+      display:flex; align-items:flex-start; gap:12px;
+      background:#fffaf5; border-radius:16px; padding:14px 14px 14px 16px;
+      box-shadow:0 16px 40px rgba(60,30,10,0.28);
+      font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+      border-left:4px solid #ff7a45;
+    }
+    .privacy-banner-icon{
+      flex-shrink:0; width:34px; height:34px; border-radius:10px; margin-top:1px;
+      background:linear-gradient(135deg,#ff7a45,#ff5a8c);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 14px rgba(255,90,140,0.35);
+    }
+    .privacy-banner-body{flex:1;min-width:0}
+    .privacy-banner-title{font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#2a1d16;margin:0 0 3px}
+    .privacy-banner-text{font-size:12.5px;line-height:1.45;color:#7a6a5e;margin:0}
+    .privacy-banner-actions{display:flex;align-items:center;gap:10px;margin-top:9px}
+    .privacy-banner-got-it{
+      border:none;cursor:pointer;padding:7px 16px;border-radius:999px;
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12px;color:#fff;
+      background:linear-gradient(135deg,#ff7a45,#ff5a8c);
+      box-shadow:0 4px 12px rgba(255,90,140,0.3);
+      transition:transform .12s;
+    }
+    .privacy-banner-got-it:hover{transform:translateY(-1px)}
+    .privacy-banner-got-it:active{transform:translateY(0)}
+    .privacy-banner-manage{
+      border:none;background:transparent;cursor:pointer;padding:0;
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;
+      color:#a3552e;text-decoration:underline;text-underline-offset:2px;
+    }
+    .privacy-banner-manage:hover{color:#7a3a1f}
+    .privacy-banner-close{
+      flex-shrink:0;border:none;background:transparent;cursor:pointer;
+      color:#c9bcae;font-size:16px;line-height:1;padding:2px;
+    }
+    .privacy-banner-close:hover{color:#8a7a6d}
+
+    body.ds-files-denied .drop-zone,
+    body.ds-files-denied [data-ds-upload="true"] {
+      opacity:0.45;filter:grayscale(0.6);position:relative;cursor:not-allowed !important;
+    }
+    body.ds-files-denied .drop-zone::after,
+    body.ds-files-denied [data-ds-upload="true"]::after {
+      content:"🔒 Local access off";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:#fff;
+      background:rgba(40,28,22,0.45);border-radius:inherit;pointer-events:none;
+    }
+    #dsFileAccessBtn{display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;
+      background:#fff2e8;color:#a3552e;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;
+      padding:6px 12px;border-radius:999px;transition:background .15s;margin-left:8px}
+    #dsFileAccessBtn:hover{background:#ffe4d3}
+    #dsFileAccessBtn.on{background:#e8f7ee;color:#2f8a53}
+    #dsAccessPanel{position:fixed;inset:0;z-index:300010;display:none;align-items:center;justify-content:center;
+      padding:20px;background:rgba(40,28,22,0.5);backdrop-filter:blur(5px)}
+    #dsAccessPanel.show{display:flex}
+    .ds-settings-card{width:100%;max-width:340px;background:#fffaf5;border-radius:20px;padding:24px;
+      font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 26px 60px rgba(60,30,10,0.3)}
+    .ds-settings-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:#2a1d16;margin:0 0 4px}
+    .ds-settings-subtitle{font-size:11.5px;color:#a89485;margin:0 0 16px;line-height:1.5}
+    .ds-settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;
+      background:#fff2e8;border-radius:14px;margin-bottom:16px}
+    .ds-settings-row-label strong{display:block;font-size:13.5px;color:#2a1d16}
+    .ds-settings-row-label span{font-size:11.5px;color:#8a7a6d}
+    .ds-switch{position:relative;width:44px;height:26px;flex-shrink:0}
+    .ds-switch input{opacity:0;width:0;height:0}
+    .ds-switch-track{position:absolute;inset:0;background:#d8cabd;border-radius:999px;cursor:pointer;transition:background .2s}
+    .ds-switch-track::before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;
+      border-radius:50%;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+    .ds-switch input:checked + .ds-switch-track{background:linear-gradient(135deg,#ff7a45,#ff5a8c)}
+    .ds-switch input:checked + .ds-switch-track::before{transform:translateX(18px)}
+    .ds-settings-close{width:100%;border:none;cursor:pointer;padding:12px;border-radius:999px;font-weight:700;
+      font-size:13.5px;background:linear-gradient(135deg,#ff7a45,#ff5a8c);color:#fff}
+  </style>
+</head>
+<body>
+  <div class="noise-bg"></div>
+
+  <!-- ============================================================
+       Privacy notice — non-blocking, dismissible banner (first visit)
+       ============================================================ -->
+  <div id="privacyBanner">
+    <div class="privacy-banner-card">
+      <div class="privacy-banner-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+        </svg>
+      </div>
+      <div class="privacy-banner-body">
+        <p class="privacy-banner-title">Your files stay on your device</p>
+        <p class="privacy-banner-text">DocStitcher opens photos and files locally for these tools. Nothing is uploaded, and there's no server involved at any point.</p>
+        <div class="privacy-banner-actions">
+          <button class="privacy-banner-got-it" onclick="PrivacyNotice.gotIt()">Got it</button>
+          <button class="privacy-banner-manage" onclick="PrivacyNotice.manage()">Manage local access</button>
+        </div>
+      </div>
+      <button class="privacy-banner-close" onclick="PrivacyNotice.gotIt()" title="Dismiss" aria-label="Dismiss">×</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Local file access control (self-imposed, in-app only —
+       not an OS/browser permission)
+       ============================================================ -->
+  <div id="dsAccessPanel" onclick="if(event.target===this) DSGate.closePanel()">
+    <div class="ds-settings-card">
+      <h3 class="ds-settings-title">Local File Access</h3>
+      <p class="ds-settings-subtitle">This is an in-app control, not a phone permission — there's nothing for your device to track here.</p>
+      <div class="ds-settings-row">
+        <div class="ds-settings-row-label">
+          <strong>Allow uploads in this app</strong>
+          <span>Turn off anytime to freeze new uploads for peace of mind</span>
+        </div>
+        <label class="ds-switch">
+          <input type="checkbox" id="dsAccessToggle" onchange="DSGate.setEnabled(this.checked)">
+          <span class="ds-switch-track"></span>
+        </label>
+      </div>
+      <button class="ds-settings-close" onclick="DSGate.closePanel()">Done</button>
+    </div>
+  </div>
+
+  <div class="sdt-frame">
+
+    <aside class="sdt-ad-rail sdt-ad-rail-left" aria-hidden="true">
+      <div class="sdt-ad-slot" id="adRailLeft"><span>Advertisement<br>160×600</span></div>
+    </aside>
+
+    <!-- SINGLE-DOC TOOLS PAGE -->
+    <div id="sdt-page">
+    <div class="page-wrap">
+      <div class="topbar fade-up">
+        <button class="back-btn" onclick="window.location.href='app.html'">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="btnBackToStitcher">Back to Stitcher</span>
+        </button>
+        <span class="badge badge-ready" data-i18n="sdtBadge">Single-Doc Tools</span>
+        <button id="dsFileAccessBtn" onclick="DSGate.openPanel()" title="Local File Access">
+          <span id="dsFileAccessBtnIcon">🔒</span> <span id="dsFileAccessBtnText">Local access</span>
+        </button>
+      </div>
+
+      <div style="margin-top:18px" class="fade-up">
+        <h1 class="page-title" data-i18n="sdtPageTitle">Single-Side Tools</h1>
+        <p class="page-sub" data-i18n="sdtPageSub">Edit image or PDF: crop, rotate, flip, compress, convert — all at once. 100% local.</p>
+      </div>
+      <div class="glow-line fade-up" style="margin-bottom:28px"></div>
+
+      <div class="tab-bar fade-up">
+        <button class="tab-btn active" onclick="sdt.switchTab('multitool',this)">✨ Image Editor</button>
+        <button class="tab-btn" onclick="sdt.switchTab('multiperson',this)" data-i18n="tabPhotoMaker">📸 Photo Maker</button>
+        <button class="tab-btn" onclick="sdt.switchTab('bulkpdf',this)">📚 PDF Modifer</button>
+        <button class="tab-btn" onclick="sdt.switchTab('watermark',this)" data-i18n="tabWatermark">Watermark</button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           SHARED SPLIT-PANEL STYLES (both tabs)
+           ══════════════════════════════════════════════ -->
+      <style>
+        /* ── universal split layout ── */
+        .sp-wrap  { display:flex; gap:20px; align-items:flex-start; }
+        .sp-left  { flex:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
+        .sp-right { width:320px; flex-shrink:0; position:sticky; top:16px; align-self:flex-start; }
+
+        /* settings cards */
+        .sp-card  { background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:20px 22px; }
+        .sp-hd    { font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+                    color:var(--text-muted); margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+        /* right-panel preview card */
+        .sp-preview-card { background:var(--surface); border:1.5px solid var(--border); border-radius:16px;
+                           padding:18px 16px; display:flex; flex-direction:column; gap:10px; }
+        .sp-preview-title { font-size:12px; font-weight:700; color:var(--text); margin:0; }
+        .sp-dl-btn { width:100%; padding:12px; border-radius:10px;
+                     background:linear-gradient(135deg,#6c63ff,#4a90d9);
+                     color:#fff; font-weight:700; font-size:13px; border:none; cursor:pointer;
+                     display:flex; align-items:center; justify-content:center; gap:6px; transition:opacity .15s; }
+        .sp-dl-btn:hover { opacity:.88; }
+        .sp-dl-btn.orange { background:linear-gradient(135deg,#f96b3f,#f0a830); }
+        .sp-row-btns { display:flex; gap:8px; }
+        .sp-row-btns .btn-secondary { flex:1; justify-content:center; font-size:12px; }
+        .sp-row-btns .btn-ghost { flex:1; justify-content:center; font-size:12px; }
+
+        /* ── FIX: #mtPreviewActive is toggled via plain display:block in JS,
+           so it isn't part of .sp-preview-card's flex/gap chain — its
+           children (preview image, stats, Download button, button row)
+           had zero space between them and visually touched. ── */
+        #mtPreviewActive > * + * { margin-top: 10px; }
+
+        /* 2-col field grid */
+        .sp-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+        .sp-field  { display:flex; flex-direction:column; gap:5px; }
+        .sp-field .ctrl-label { margin:0; }
+        .sp-num    { width:62px; padding:6px 9px; border:1.5px solid var(--border); border-radius:8px;
+                     font-size:13px; background:var(--surface); color:var(--text); }
+
+        /* paper size chips */
+        .sp-paper-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+        .sp-paper-btn  { padding:7px 5px; border-radius:8px; border:1.5px solid var(--border);
+                         background:var(--surface-2); color:var(--text); font-size:11px; font-weight:600;
+                         cursor:pointer; text-align:center; line-height:1.35; transition:all .15s; }
+        .sp-paper-btn:hover  { border-color:var(--accent); color:var(--accent); }
+        .sp-paper-btn.active { border-color:var(--accent); background:rgba(108,99,255,.13); color:var(--accent); }
+
+        /* fill direction buttons */
+        .sp-dir-btn { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:9px;
+                      border:1.5px solid var(--border); background:var(--surface-2); color:var(--text);
+                      font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; width:100%; text-align:left; }
+        .sp-dir-btn:hover  { border-color:var(--accent); color:var(--accent); }
+        .sp-dir-btn.active { border-color:var(--accent); background:rgba(108,99,255,.13); color:var(--accent); }
+
+        /* corner grid — 2×2 */
+        .sp-corner-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+        .sp-corner-btn  { padding:7px 8px; border-radius:8px; border:1.5px solid var(--border);
+                          background:var(--surface-2); color:var(--text); font-size:11.5px;
+                          font-weight:500; cursor:pointer; transition:all .15s; }
+        .sp-corner-btn:hover  { border-color:var(--accent); color:var(--accent); }
+        .sp-corner-btn.active { border-color:var(--accent); background:rgba(108,99,255,.13); color:var(--accent); }
+
+        /* stats strip in right panel */
+        .sp-stats { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .sp-stat  { background:var(--surface-2); border-radius:8px; padding:7px 10px; }
+        .sp-stat-lbl { font-size:10px; color:var(--text-muted); margin-bottom:2px; }
+        .sp-stat-val { font-size:12px; font-weight:700; color:var(--text); }
+        .sp-stat-val.orange { color:var(--accent-warm, #f96b3f); }
+
+        /* fill-page section */
+        .sp-fill-section { padding:14px 18px; background:var(--surface-2); border-radius:13px; border:1.5px solid var(--border); }
+
+        @media (max-width:900px) {
+          .sp-wrap { flex-direction:column; }
+          .sp-right { width:100%; position:static; }
+          .sp-paper-grid { grid-template-columns:repeat(3,1fr); }
+        }
+        @media (max-width:520px) {
+          .sp-grid-2 { grid-template-columns:1fr; }
+          .sp-paper-grid { grid-template-columns:repeat(2,1fr); }
+        }
+
+        /* ── Ad slots — one per tool section ──
+           .sdt-ad-side: sits inside the sticky .sp-right sidebar (Multi-Tool
+             Editor / Photo Maker), sized for a standard 300×250 medium
+             rectangle so it fits the 320px-wide column cleanly.
+           .sdt-ad-banner: full-width horizontal slot for tabs with no
+             sidebar (Bulk PDF Builder / Watermark), placed between or
+             after the tool cards so it never sits inside a drop zone or
+             interrupts an active control. */
+        .sdt-ad-slot {
+          display:flex; align-items:center; justify-content:center; text-align:center;
+          border-radius:14px; border:1.5px dashed var(--border);
+          background:var(--surface-2); color:var(--text-muted);
+          font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+          padding:10px;
+        }
+        .sdt-ad-slot span { opacity:.7; }
+        .sdt-ad-side { width:100%; min-height:250px; margin-top:14px; }
+        .sdt-ad-banner { min-height:100px; margin:20px 0; }
+        @media (max-width:900px) {
+          .sdt-ad-side { min-height:200px; }
+        }
+
+        /* ── Page-level sticky side ad rails (same pattern as app.html) ──
+           Wraps #sdt-page in a 3-column grid: left rail | page content |
+           right rail. Both rails are position:sticky so they stay pinned
+           on screen the whole time the user scrolls through a tool,
+           regardless of how long that tab's content gets. */
+        .sdt-frame {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          grid-template-columns: minmax(0,1fr) minmax(0,940px) minmax(0,1fr);
+          align-items: start;
+          gap: 0;
+        }
+        .sdt-ad-rail {
+          position: sticky;
+          top: 16px;
+          height: calc(100dvh - 32px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+        }
+        .sdt-ad-rail-left { justify-self: end; }
+        .sdt-ad-rail-right { justify-self: start; }
+        .sdt-ad-rail .sdt-ad-slot { width: 160px; min-height: 280px; }
+        /* Hide rails only when there isn't room for 160+160+940 side by side */
+        @media (max-width:1340px) {
+          .sdt-frame { grid-template-columns: 1fr; }
+          .sdt-ad-rail { display: none; }
+        }
+        /* ── FIX: setting cards (3·Output Size, 4·Compress, 5·Enhancement, 6·BG Removal etc.)
+           were rendering flush against each other with no visible gap. .sp-left already
+           declares gap:14px, but margin-collapsing / cascade conflicts from style.css were
+           zeroing it out in practice, so we enforce the gap directly on the cards too. */
+        .sp-card { margin-bottom: 16px !important; }
+        .sp-card:last-child { margin-bottom: 0 !important; }
+
+        /* ── FIX: "Output Format / Quality / Max Width" row didn't wrap, so on
+           narrower widths the Max Width slider's "Original" label got pushed past
+           the card's right edge instead of staying inside the box. ── */
+        .ctrl-row { flex-wrap: wrap !important; row-gap: 16px !important; }
+        .ctrl-group { min-width: 150px; }
+        .slider-wrap { min-width: 0; }
+        .slider-wrap input[type="range"] { min-width: 0; flex: 1 1 auto; }
+        .slider-val { white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
+
+        /* ── live estimated output size next to the Quality slider ── */
+        .mt-qual-size-est { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+        .mt-qual-size-est .mt-qual-size-val { font-weight: 700; color: var(--accent-warm, #f96b3f); }
+
+        /* ── Live Preview empty state — shown instead of a broken-image icon
+           before anything has been uploaded / after Clear Page is pressed ── */
+        .sp-preview-empty { display:flex; flex-direction:column; align-items:center; justify-content:center;
+          gap:8px; padding:46px 16px; border:1.5px dashed var(--border); border-radius:12px;
+          background:var(--surface-2); text-align:center; }
+        .sp-preview-empty-icon { font-size:30px; opacity:.45; }
+        .sp-preview-empty-txt { font-size:12px; color:var(--text-muted); }
+
+        /* ── "Clear Page" — red shining/glowing button shown at the top of every
+           tab so the user can instantly wipe that section's work and start fresh ── */
+        .clear-page-bar { display:flex; justify-content:flex-end; margin-bottom:14px; }
+        .clear-page-btn {
+          display:inline-flex; align-items:center; gap:7px;
+          padding:10px 18px; border-radius:11px; border:none; cursor:pointer;
+          font-size:12.5px; font-weight:800; letter-spacing:.02em; color:#fff;
+          background:linear-gradient(135deg,#ff3b3b,#c4001d);
+          box-shadow:0 0 0 1.5px rgba(255,59,59,0.35), 0 6px 18px rgba(196,0,29,0.45), 0 0 22px rgba(255,59,59,0.55);
+          animation: clearPageGlow 2.2s ease-in-out infinite;
+          transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .clear-page-btn:hover {
+          transform: translateY(-1px);
+          box-shadow:0 0 0 1.5px rgba(255,59,59,0.5), 0 8px 22px rgba(196,0,29,0.55), 0 0 30px rgba(255,59,59,0.8);
+        }
+        .clear-page-btn:active { transform: translateY(0); }
+        @keyframes clearPageGlow {
+          0%, 100% { box-shadow:0 0 0 1.5px rgba(255,59,59,0.35), 0 6px 18px rgba(196,0,29,0.45), 0 0 14px rgba(255,59,59,0.45); }
+          50%      { box-shadow:0 0 0 1.5px rgba(255,59,59,0.55), 0 6px 18px rgba(196,0,29,0.55), 0 0 30px rgba(255,59,59,0.85); }
+        }
+        @media (max-width:520px) {
+          .clear-page-bar { justify-content:stretch; }
+          .clear-page-btn { width:100%; justify-content:center; }
+        }
+      </style>
+
+      <!-- ══════════════════════════════════════
+           MULTI-TOOL TAB
+           ══════════════════════════════════════ -->
+      <div class="tool-section active" id="tab-multitool">
+        <div class="clear-page-bar">
+          <button class="clear-page-btn" onclick="sdt.clearMultiToolPage()">🗑️ Clear Page</button>
+        </div>
+        <div class="sp-wrap">
+
+          <!-- LEFT: upload + all controls -->
+          <div class="sp-left">
+
+            <!-- Upload drop zone -->
+            <div class="sp-card">
+              <p class="sp-hd">Upload Image or PDF</p>
+              <div class="drop-zone sdt-drop" id="mtDrop" onclick="document.getElementById('mtInput').click()"
+                   ondragover="sdt.dzDrag(event,'mtDrop')" ondragleave="sdt.dzLeave('mtDrop')" ondrop="sdt.dzDrop(event,'mtDrop',sdt.loadMultiToolFile)">
+                <input type="file" id="mtInput" accept="image/*,.pdf,application/pdf" onchange="sdt.loadMultiToolFile(this.files[0])">
+                <div id="mtPlaceholder" class="sdt-placeholder">
+                  <div class="drop-icon">🖼</div>
+                  <div class="drop-label" data-i18n="mtDropLabel">Click or drag image / PDF here</div>
+                  <div class="drop-hint" data-i18n="mtDropHint">JPG, PNG, WebP, PDF supported</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="mtEditor" style="display:none;display:none;flex-direction:column;gap:14px">
+
+              <!-- Rotate -->
+              <div class="sp-card">
+                <p class="sp-hd">1 · Rotate</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                  <button class="btn-secondary" onclick="sdt.mtRotate(-90)" data-i18n="btnRotateL">↺ 90° Left</button>
+                  <button class="btn-secondary" onclick="sdt.mtRotate(90)" data-i18n="btnRotateR">↻ 90° Right</button>
+                  <input type="number" id="mtRotateFine" value="0" step="0.5" min="-45" max="45"
+                         style="width:70px;padding:6px 9px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"
+                         oninput="sdt.mtSetRotation(this.value)">
+                  <span id="mtRotateFineLabel" style="font-size:12px;color:var(--text-muted)">0 deg</span>
+                </div>
+              </div>
+
+              <!-- Crop -->
+              <div class="sp-card">
+                <p class="sp-hd">2 · Crop — drag on image to select</p>
+                <div class="crop-canvas-wrap" id="mtCropWrap"
+                     style="margin-bottom:10px;background:var(--surface-2);border-radius:12px;overflow:hidden;line-height:0;">
+                  <canvas id="mtCropCanvas" style="max-width:none;border-radius:10px;cursor:crosshair;display:block;touch-action:none;"></canvas>
+                </div>
+                <div id="mtCropInfo" style="font-size:11.5px;color:var(--text-muted);margin-bottom:8px;min-height:18px"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn-secondary" id="mtApplyCropBtn" onclick="sdt.mtApplyCrop()" data-i18n="btnApplyCrop">✂ Apply Crop</button>
+                  <button class="btn-ghost" onclick="sdt.mtClearCrop()" data-i18n="btnClearCrop">Clear Crop</button>
+                </div>
+              </div>
+
+              <!-- Output Size -->
+              <div class="sp-card">
+                <p class="sp-hd">3 · Set Output Size <span style="font-weight:400;text-transform:none;font-size:10px">(optional)</span></p>
+                <div class="size-input-grid" style="margin-bottom:10px">
+                  <div class="size-unit-group">
+                    <label class="ctrl-label">Width</label>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input type="number" class="size-dim-input" id="mtSizeW" value="2.5" placeholder="e.g. 2.5" step="0.1" min="0.1" oninput="sdt.mtSizeChanged()">
+                      <select class="ctrl-select size-unit-select" id="mtSizeUnitW" onchange="sdt.mtSizeUnitChanged('w')">
+                        <option value="cm">cm</option><option value="mm">mm</option><option value="in">in</option><option value="px">px</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="size-unit-group" style="display:flex;align-items:center;justify-content:center;padding-top:16px">
+                    <span style="font-size:18px;color:var(--text-muted)">×</span>
+                  </div>
+                  <div class="size-unit-group">
+                    <label class="ctrl-label">Height</label>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input type="number" class="size-dim-input" id="mtSizeH" value="3" placeholder="e.g. 3" step="0.1" min="0.1" oninput="sdt.mtSizeChanged()">
+                      <select class="ctrl-select size-unit-select" id="mtSizeUnitH" onchange="sdt.mtSizeUnitChanged('h')">
+                        <option value="cm">cm</option><option value="mm">mm</option><option value="in">in</option><option value="px">px</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="size-unit-group" style="display:flex;align-items:flex-end;padding-bottom:2px">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <button class="btn-secondary size-preset-btn" onclick="sdt.mtApplySizePreset(2.5,3,'cm')">Passport 2.5×3cm</button>
+                      <button class="btn-secondary size-preset-btn" onclick="sdt.mtApplySizePreset(2,2,'in')">2×2 in (US)</button>
+                      <button class="btn-ghost size-preset-btn" onclick="sdt.mtClearSize()">Clear Size</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="mtSizeInfo" style="font-size:11.5px;color:var(--text-muted);min-height:18px"></div>
+              </div>
+
+              <!-- Compress & Convert -->
+              <div class="sp-card">
+                <p class="sp-hd">4 · Compress &amp; Convert</p>
+                <div class="ctrl-row">
+                  <div class="ctrl-group">
+                    <label class="ctrl-label" data-i18n="labelOutputFmt">Output Format</label>
+                    <select class="ctrl-select" id="mtFmt" onchange="sdt.mtSetFormat(this.value)">
+                      <option value="jpeg">JPEG (best compression)</option>
+                      <option value="webp">WebP (modern, tiny)</option>
+                      <option value="png">PNG (lossless)</option>
+                    </select>
+                  </div>
+                  <div class="ctrl-group">
+                    <label class="ctrl-label"><span data-i18n="labelQualMt">Quality</span> <span id="mtQualLabel">85%</span></label>
+                    <div class="slider-wrap">
+                      <input type="range" id="mtQual" min="1" max="100" value="85" oninput="sdt.mtSetQuality(this.value)" style="--pct:85%">
+                    </div>
+                    <div class="mt-qual-size-est" id="mtQualSizeEst">≈ estimated size: -</div>
+                  </div>
+                  <div class="ctrl-group">
+                    <label class="ctrl-label" data-i18n="labelMaxWidth">Max Width (px)</label>
+                    <div class="slider-wrap">
+                      <input type="range" id="mtMaxW" min="0" max="4000" step="100" value="0" oninput="sdt.mtSetMaxW(this.value)" style="--pct:0%">
+                      <span class="slider-val" id="mtMaxWLabel">Original</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Brightness -->
+              <div class="sp-card">
+                <p class="sp-hd">5 · Photo Enhancement</p>
+                <div class="ctrl-group">
+                  <label class="ctrl-label">Brightness / Clarity: <span id="mtBrightnessLabel">0</span></label>
+                  <div class="slider-wrap" style="margin-top:6px">
+                    <input type="range" id="mtBrightness" min="-100" max="100" value="0" step="1" oninput="sdt.mtSetBrightness(this.value)" style="--pct:50%">
+                  </div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:4px">← Darken &nbsp;&nbsp; 0 = Original &nbsp;&nbsp; Brighten →</div>
+                </div>
+              </div>
+
+              <!-- Background Removal -->
+              <div class="sp-card">
+                <p class="sp-hd">6 · Background Removal</p>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                  <span style="font-size:12px;color:var(--text-muted);font-weight:600">remove.bg API Key:</span>
+                  <span class="ds-removebg-key-status" style="font-size:12px"></span>
+                  <button onclick="showRemoveBgSetup()" style="font-size:11px;padding:4px 12px;border-radius:8px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-weight:600">⚙ Setup</button>
+                </div>
+                <div class="ds-removebg-counter" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;padding:7px 11px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border)">🖼 remove.bg credits: loading…</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px">
+                  <div class="ctrl-group" style="flex:1">
+                    <label class="ctrl-label">Removal Method</label>
+                    <select class="ctrl-select" id="mtBgMode" onchange="sdt.mtSetBgMode(this.value)">
+                      <option value="local">🤖 Built-in Local AI (free, offline)</option>
+                      <option value="api">☁️ remove.bg API (50 free/month)</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn-primary" id="mtRemoveBgBtn" onclick="sdt.mtRemoveBg()">✨ Remove BG</button>
+                    <button class="btn-ghost" id="mtRestoreBgBtn" onclick="sdt.mtRestoreBg()" style="display:none">↩ Restore</button>
+                  </div>
+                </div>
+                <div id="mtBgStatus" style="font-size:12px;color:var(--text-muted);min-height:18px;margin-bottom:10px"></div>
+                <div id="mtBgColorRow" style="display:none">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:8px">Fill Background Colour:</div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <button class="mp-bg-swatch checker" title="Transparent" onclick="sdt.mtFillBg('transparent')" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/12px 12px;cursor:pointer"></button>
+                    <button class="mp-bg-swatch" title="White" onclick="sdt.mtFillBg('#ffffff')" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);background:#ffffff;cursor:pointer"></button>
+                    <button class="mp-bg-swatch" title="Sky Blue" onclick="sdt.mtFillBg('#87CEEB')" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);background:#87CEEB;cursor:pointer"></button>
+                    <button class="mp-bg-swatch" title="Light Blue" onclick="sdt.mtFillBg('#b0d4f1')" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);background:#b0d4f1;cursor:pointer"></button>
+                    <button class="mp-bg-swatch" title="Light Grey" onclick="sdt.mtFillBg('#eeeeee')" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);background:#eeeeee;cursor:pointer"></button>
+                    <label title="Custom colour" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px">🎨<input type="color" value="#4a90d9" oninput="sdt.mtFillBgCustom(this.value)" style="opacity:0;position:absolute;width:1px;height:1px"></label>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /mtEditor -->
+          </div><!-- /sp-left -->
+
+          <!-- RIGHT: sticky live preview + actions -->
+          <div class="sp-right">
+            <div class="sp-preview-card">
+              <p class="sp-preview-title">🖼 Live Preview</p>
+
+              <!-- Empty state — shown until an image is loaded/edited -->
+              <div id="mtPreviewEmpty" class="sp-preview-empty">
+                <div class="sp-preview-empty-icon">🖼️</div>
+                <div class="sp-preview-empty-txt">Your edited image will appear here</div>
+              </div>
+
+              <div id="mtPreviewActive" style="display:none">
+                <div class="output-preview-wrap" style="margin:0">
+                  <img id="mtPreview" alt="processed output" style="max-width:100%;max-height:360px;border-radius:8px;display:block">
+                </div>
+
+                <!-- Stats -->
+                <div class="sp-stats" id="mtStatsBlock" style="display:none">
+                  <div class="sp-stat">
+                    <div class="sp-stat-lbl">Original Size</div>
+                    <div class="sp-stat-val" id="mtOrigSize">-</div>
+                  </div>
+                  <div class="sp-stat">
+                    <div class="sp-stat-lbl">Original Dims</div>
+                    <div class="sp-stat-val" id="mtOrigDims">-</div>
+                  </div>
+                  <div class="sp-stat">
+                    <div class="sp-stat-lbl">Output Size</div>
+                    <div class="sp-stat-val orange" id="mtNewSize">-</div>
+                  </div>
+                  <div class="sp-stat">
+                    <div class="sp-stat-lbl">Output Dims</div>
+                    <div class="sp-stat-val" id="mtNewDims">-</div>
+                  </div>
+                </div>
+
+                <button class="sp-dl-btn" onclick="sdt.mtDownload()" data-i18n="btnDownloadMt">⬇ Download</button>
+
+                <div class="sp-row-btns">
+                  <button class="btn-secondary" onclick="sdt.mtSendToApp()" style="flex:1;justify-content:center;font-size:11.5px" data-i18n="btnSendToStitcher">→ Stitcher</button>
+                  <button class="btn-secondary" onclick="sdt.mtReset()" style="flex:1;justify-content:center;font-size:11.5px">↺ Reset</button>
+                  <button class="btn-ghost" onclick="sdt.clearMultiTool()" style="flex:1;justify-content:center;font-size:11.5px" data-i18n="btnClearMt">Clear</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="sdt-ad-slot sdt-ad-side" id="adSlotMultiTool" aria-hidden="true">
+              <span>Advertisement<br>300×250</span>
+            </div>
+          </div><!-- /sp-right -->
+
+        </div><!-- /sp-wrap -->
+      </div>
+
+      <!-- ══════════════════════════════════════
+           PHOTO MAKER TAB
+           ══════════════════════════════════════ -->
+      <div class="tool-section" id="tab-multiperson">
+        <div class="clear-page-bar">
+          <button class="clear-page-btn" onclick="mp.clearPhotoMakerPage()">🗑️ Clear Page</button>
+        </div>
+        <div class="sp-wrap">
+
+          <!-- LEFT: all controls -->
+          <div class="sp-left">
+
+            <!-- 1. Basic Settings -->
+            <div class="sp-card">
+              <p class="sp-hd">1 · Basic Settings</p>
+              <div class="sp-grid-2">
+
+                <div class="sp-field">
+                  <label class="ctrl-label" data-i18n="pmLabelPersons">👤 Number of Persons</label>
+                  <div style="display:flex;gap:6px">
+                    <button class="a4-count-btn active" onclick="mp.setPersonCount(1)" id="mpCount1" style="min-width:36px">1</button>
+                    <button class="a4-count-btn" onclick="mp.setPersonCount(2)" id="mpCount2" style="min-width:36px">2</button>
+                    <button class="a4-count-btn" onclick="mp.setPersonCount(3)" id="mpCount3" style="min-width:36px">3</button>
+                    <button class="a4-count-btn" onclick="mp.setPersonCount(4)" id="mpCount4" style="min-width:36px">4</button>
+                  </div>
+                </div>
+
+                <div class="sp-field">
+                  <label class="ctrl-label" data-i18n="pmLabelOrientation">📄 Page Orientation</label>
+                  <div style="display:flex;gap:6px">
+                    <button class="a4-orient-btn active" id="mpOrientPortrait" onclick="mp.setOrient('portrait')" data-i18n="pmOrientPortrait">Portrait</button>
+                    <button class="a4-orient-btn" id="mpOrientLandscape" onclick="mp.setOrient('landscape')" data-i18n="pmOrientLandscape">Landscape</button>
+                  </div>
+                </div>
+
+                <div class="sp-field">
+                  <label class="ctrl-label" data-i18n="pmLabelGap">↔ Gap (mm)</label>
+                  <input type="number" id="mpGap" value="2" step="0.5" min="0" max="15" class="sp-num" oninput="mp.refreshPreview()">
+                </div>
+
+                <div class="sp-field">
+                  <label class="ctrl-label" data-i18n="pmLabelMargin">📐 Margin (mm)</label>
+                  <input type="number" id="mpMargin" value="3" step="0.5" min="0" max="25" class="sp-num" oninput="mp.refreshPreview()">
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 2. Paper Size -->
+            <div class="sp-card">
+              <p class="sp-hd">2 · Paper Size</p>
+              <div class="sp-paper-grid">
+                <button class="sp-paper-btn active" id="mpPaper_a4"     onclick="mp.setMpPaperSize('a4')">A4<br><span style="font-weight:400;font-size:10px">210×297mm</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_a5"     onclick="mp.setMpPaperSize('a5')">A5<br><span style="font-weight:400;font-size:10px">148×210mm</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_4x6"    onclick="mp.setMpPaperSize('4x6')">4R<br><span style="font-weight:400;font-size:10px">4×6 in</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_5x7"    onclick="mp.setMpPaperSize('5x7')">5R<br><span style="font-weight:400;font-size:10px">5×7 in</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_3x5"    onclick="mp.setMpPaperSize('3x5')">3R<br><span style="font-weight:400;font-size:10px">3×5 in</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_letter" onclick="mp.setMpPaperSize('letter')">Letter<br><span style="font-weight:400;font-size:10px">8.5×11 in</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_legal"  onclick="mp.setMpPaperSize('legal')">Legal<br><span style="font-weight:400;font-size:10px">8.5×14 in</span></button>
+                <button class="sp-paper-btn"        id="mpPaper_custom" onclick="mp.setMpPaperSize('custom')">Custom<br><span style="font-weight:400;font-size:10px">set below</span></button>
+              </div>
+              <div id="mpCustomSizeRow" style="display:none;margin-top:12px;gap:10px;align-items:center;flex-wrap:wrap">
+                <label class="ctrl-label" style="margin:0">Width (mm):</label>
+                <input type="number" id="mpCustomPW" value="210" min="50" max="600" step="1" class="sp-num" oninput="mp.setMpCustomDim()">
+                <label class="ctrl-label" style="margin:0">× Height (mm):</label>
+                <input type="number" id="mpCustomPH" value="297" min="50" max="600" step="1" class="sp-num" oninput="mp.setMpCustomDim()">
+              </div>
+            </div>
+
+            <!-- 3. Placement -->
+            <div class="sp-card">
+              <p class="sp-hd">3 · Placement</p>
+              <div class="sp-grid-2">
+
+                <div class="sp-field">
+                  <label class="ctrl-label" data-i18n="pmLabelStartFrom">📌 Start Placing From</label>
+                  <div class="sp-corner-grid">
+                    <button class="sp-corner-btn active" id="mpCorner_tl" onclick="mp.setMpCorner('tl')">↖ Top-Left</button>
+                    <button class="sp-corner-btn"        id="mpCorner_tr" onclick="mp.setMpCorner('tr')">↗ Top-Right</button>
+                    <button class="sp-corner-btn"        id="mpCorner_bl" onclick="mp.setMpCorner('bl')">↙ Bot-Left</button>
+                    <button class="sp-corner-btn"        id="mpCorner_br" onclick="mp.setMpCorner('br')">↘ Bot-Right</button>
+                  </div>
+                </div>
+
+                <div class="sp-field">
+                  <label class="ctrl-label" data-i18n="pmLabelFillPhotos">🔀 Fill Direction</label>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <button class="sp-dir-btn active" id="mpDirRow" onclick="mp.setMpImgDir('row')">
+                      <svg width="26" height="15" viewBox="0 0 32 18" fill="none" style="flex-shrink:0">
+                        <rect x="1" y="1" width="8" height="7" rx="1" fill="currentColor" opacity="0.8"/>
+                        <rect x="12" y="1" width="8" height="7" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="23" y="1" width="8" height="7" rx="1" fill="currentColor" opacity="0.3"/>
+                        <rect x="1" y="10" width="8" height="7" rx="1" fill="currentColor" opacity="0.2"/>
+                        <path d="M4 4 L28 4" stroke="currentColor" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.5"/>
+                      </svg>
+                      Row by Row
+                    </button>
+                    <button class="sp-dir-btn" id="mpDirCol" onclick="mp.setMpImgDir('col')">
+                      <svg width="26" height="15" viewBox="0 0 32 18" fill="none" style="flex-shrink:0">
+                        <rect x="1" y="1" width="8" height="7" rx="1" fill="currentColor" opacity="0.8"/>
+                        <rect x="1" y="10" width="8" height="7" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="12" y="1" width="8" height="7" rx="1" fill="currentColor" opacity="0.3"/>
+                        <rect x="12" y="10" width="8" height="7" rx="1" fill="currentColor" opacity="0.2"/>
+                        <path d="M5 2 L5 16" stroke="currentColor" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.5"/>
+                      </svg>
+                      Column by Column
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 4. Person cards -->
+            <div id="mpPersonsContainer" style="display:grid;gap:16px"></div>
+
+            <!-- 5. Fill Page -->
+            <div id="mpFillPageSection" class="sp-fill-section">
+              <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:var(--text)" data-i18n="pmFillPageTitle">🗂 Fill Page with Uploaded Photos</div>
+              <p style="font-size:11.5px;color:var(--text-muted);margin-bottom:10px;line-height:1.5" data-i18n="pmFillPageSub">Fills the whole page using the photo count per person entered above.</p>
+              <div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">
+                  <input type="checkbox" id="fpExtraMargin" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
+                  <span data-i18n="pmExtraMarginLabel">Add 1.5 in signature margin on:</span>
+                </label>
+                <select id="fpExtraMarginSide" style="padding:5px 9px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
+                  <option value="bottom" data-i18n="pmSideBottom">Bottom</option>
+                  <option value="top" data-i18n="pmSideTop">Top</option>
+                  <option value="left" data-i18n="pmSideLeft">Left</option>
+                  <option value="right" data-i18n="pmSideRight">Right</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn-primary" onclick="mp.downloadFillPagePDF()" style="background:linear-gradient(135deg,#f96b3f,#f0a830)" data-i18n="pmBtnFillPage">📄 Download Fill-Page PDF</button>
+                <button class="btn-secondary" onclick="mp.printFillPagePDF()" data-i18n="pmBtnPrint">🖨 Print</button>
+              </div>
+            </div>
+
+          </div><!-- /sp-left -->
+
+          <!-- RIGHT: sticky live preview -->
+          <div class="sp-right">
+
+            <!-- Single Image Zoom Preview Card — FIRST -->
+            <div class="sp-preview-card" id="mpSingleImgCard" style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <p class="sp-preview-title" style="margin:0">🔍 Single Photo Preview</p>
+                <select id="mpSingleImgSelector" onchange="mp.refreshSingleImagePreview()"
+                  style="font-size:11px;padding:3px 7px;border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);display:none">
+                  <option value="0">Person 1</option>
+                  <option value="1">Person 2</option>
+                  <option value="2">Person 3</option>
+                  <option value="3">Person 4</option>
+                </select>
+              </div>
+              <div id="mpSingleImgWrap" style="width:100%;background:var(--surface-2);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:60px">
+                <img id="mpSingleImgPreview" alt="Single photo preview" style="display:none;border-radius:6px;image-rendering:auto">
+                <div id="mpSingleImgPlaceholder" style="font-size:12px;color:var(--text-muted);padding:18px;text-align:center">Upload a photo to see a zoomed preview here.</div>
+              </div>
+              <div id="mpSingleImgInfo" style="font-size:10.5px;color:var(--text-muted);text-align:center;margin-top:5px;min-height:14px"></div>
+              <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
+                <div style="font-size:10.5px;font-weight:600;color:var(--text-muted);margin-bottom:5px">⬇ Save this photo:</div>
+                <div style="display:flex;gap:6px">
+                  <button class="btn-secondary" onclick="mp.downloadSingleImageFromSelector('jpeg')" style="flex:1;justify-content:center;font-size:11px">JPG</button>
+                  <button class="btn-secondary" onclick="mp.downloadSingleImageFromSelector('png')" style="flex:1;justify-content:center;font-size:11px">PNG</button>
+                  <button class="btn-secondary" onclick="mp.mpSendToApp()" style="flex:1;justify-content:center;font-size:11px" title="Send this photo to Document Stitcher">→ Stitcher</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Combined Page Preview Card — SECOND -->
+            <div class="sp-preview-card">
+
+              <p class="sp-preview-title">🖼 Combined Preview</p>
+
+              <div id="mpA4PreviewWrap" class="a4-preview-wrap" style="width:100%;overflow:hidden;display:flex;align-items:flex-start;justify-content:center">
+                <canvas id="mpA4Canvas" style="display:block;border-radius:4px"></canvas>
+              </div>
+              <div id="mpA4Info" style="font-size:11px;color:var(--text-muted);text-align:center;min-height:15px"></div>
+
+              <button class="sp-dl-btn" onclick="mp.downloadPDF()" data-i18n="pmBtnDownloadPdf">⬇ Download PDF</button>
+
+              <div class="sp-row-btns">
+                <button class="btn-secondary" onclick="mp.printPDF()" data-i18n="pmBtnPrint">🖨 Print</button>
+                <button class="btn-secondary" onclick="mp.refreshPreview()" data-i18n="pmBtnRefresh">🔄 Refresh</button>
+              </div>
+
+              <div style="border-top:1px solid var(--border);padding-top:10px">
+                <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px" data-i18n="pmSaveEdited">💾 Save Edited Photo:</div>
+                <div style="display:flex;gap:6px">
+                  <button class="btn-secondary" onclick="mp.downloadSingleImage(0,'jpeg')" style="flex:1;justify-content:center;font-size:11.5px">📷 JPG</button>
+                  <button class="btn-secondary" onclick="mp.downloadSingleImage(0,'png')" style="flex:1;justify-content:center;font-size:11.5px">📷 PNG</button>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="sdt-ad-slot sdt-ad-side" id="adSlotPhotoMaker" aria-hidden="true">
+              <span>Advertisement<br>300×250</span>
+            </div>
+
+          </div><!-- /sp-right -->
+
+        </div><!-- /sp-wrap -->
+      </div>
+
+      <!-- BULK PDF BUILDER TAB -->
+      <div class="tool-section" id="tab-bulkpdf">
+        <div class="clear-page-bar">
+          <button class="clear-page-btn" onclick="sdt.clearBulkPdfPage()">🗑️ Clear Page</button>
+        </div>
+
+        <!-- PDF COMPRESSOR -->
+        <div class="card" style="padding:28px;margin-bottom:20px">
+          <div class="card-title" data-i18n="pcCardTitle">🗜 PDF Compressor</div>
+          <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:18px" data-i18n="pcCardSub">Upload any PDF and reduce its file size using the slider below. All content is preserved — only quality is adjusted.</p>
+          <div class="drop-zone sdt-drop" id="pcDrop" onclick="document.getElementById('pcInput').click()"
+               ondragover="sdt.dzDrag(event,'pcDrop')" ondragleave="sdt.dzLeave('pcDrop')" ondrop="sdt.pcDzDrop(event)">
+            <input type="file" id="pcInput" accept=".pdf,application/pdf" onchange="sdt.pcLoadFile(this.files[0])">
+            <div id="pcPlaceholder" class="sdt-placeholder">
+              <div class="drop-icon">📄</div>
+              <div class="drop-label" data-i18n="pcDropLabel">Click or drag a PDF here</div>
+              <div class="drop-hint" data-i18n="pcDropHint">Any PDF · up to 200 pages · 100% local processing</div>
+            </div>
+            <div id="pcFileInfo" style="display:none;text-align:center;padding:12px 0">
+              <div style="font-size:14px;font-weight:700;color:var(--accent)" id="pcFileName">file.pdf</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="pcFileSize">— KB · — pages</div>
+            </div>
+          </div>
+          <div id="pcEditor" style="display:none;margin-top:20px">
+            <div class="ctrl-group" style="margin-bottom:16px">
+              <label class="ctrl-label">🎚 <span data-i18n="pcQualLabel">Quality / Size</span> — <span id="pcQualLabel">60%</span> &nbsp;<span style="color:var(--text-muted);font-size:11px" data-i18n="pcQualHint">(lower = smaller file)</span></label>
+              <div class="slider-wrap" style="margin-top:8px">
+                <span class="ctrl-label" style="font-size:10px;white-space:nowrap" data-i18n="pcLabelSmallest">Smallest</span>
+                <input type="range" id="pcQual" min="5" max="100" value="60" step="5" oninput="sdt.pcUpdateQualLabel(this)" style="--pct:58%">
+                <span class="ctrl-label" style="font-size:10px;white-space:nowrap" data-i18n="pcLabelHighest">Highest</span>
+              </div>
+            </div>
+            <div class="target-size-wrap" style="margin-bottom:16px">
+              <span class="ctrl-label" style="white-space:nowrap" data-i18n="pcTargetSizeLabel">Or target size:</span>
+              <input type="number" class="target-size-input" id="pcTargetKb" min="20" max="50000" placeholder="e.g. 200" oninput="sdt.pcTargetChanged(this)">
+              <span class="ctrl-label" style="white-space:nowrap;align-self:center">KB</span>
+              <button class="target-size-btn" onclick="sdt.pcApplyTarget()" data-i18n="pcBtnSet">Set</button>
+            </div>
+            <div class="stats-bar" style="margin-bottom:18px">
+              <div class="stat-item"><span class="stat-label" data-i18n="pcStatOrigSize">Original Size</span><span class="stat-val" id="pcOrigSize">—</span></div>
+              <div class="stat-item"><span class="stat-label" data-i18n="pcStatPages">Pages</span><span class="stat-val" id="pcPageCount">—</span></div>
+              <div class="stat-item"><span class="stat-label" data-i18n="pcStatEstOut">Est. Output</span><span class="stat-val orange" id="pcEstSize">—</span></div>
+            </div>
+            <div id="pcProgress" style="display:none;margin-bottom:14px">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px" id="pcProgressLabel">Compressing…</div>
+              <div class="bp-progress-track"><div class="bp-progress-bar" id="pcProgressBar"></div></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn-primary" onclick="sdt.pcDownload()" style="background:linear-gradient(135deg,#18a87a,#0e7a59)" data-i18n="pcBtnDownload">⬇ Download Compressed PDF</button>
+              <button class="btn-ghost" onclick="sdt.pcClear()" data-i18n="pcBtnClear">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sdt-ad-slot sdt-ad-banner" id="adSlotBulkPdf" aria-hidden="true">
+          <span>Advertisement</span>
+        </div>
+
+        <!-- BULK PDF BUILDER -->
+        <div class="card" style="padding:28px">
+          <div class="card-title" data-i18n="bpCardTitle">📚 Bulk PDF Builder</div>
+          <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:18px" data-i18n="bpCardSub">Upload 40–50 images or PDFs at once, arrange them in any order, preview each page, then download as one combined PDF.</p>
+          <div class="drop-zone sdt-drop" id="bpDrop" onclick="document.getElementById('bpInput').click()"
+               ondragover="sdt.dzDrag(event,'bpDrop')" ondragleave="sdt.dzLeave('bpDrop')" ondrop="sdt.bpDzDrop(event)">
+            <input type="file" id="bpInput" accept="image/*,.pdf,application/pdf" multiple onchange="sdt.bpAddFiles(this.files)">
+            <div class="sdt-placeholder">
+              <div class="drop-icon">📂</div>
+              <div class="drop-label" data-i18n="bpDropLabel">Click or drag JPG / PNG / PDF files here</div>
+              <div class="drop-hint" data-i18n="bpDropHint">Multiple files at once · up to 100 files · all processing is local</div>
+            </div>
+          </div>
+          <div id="bpToolbar" style="display:none;margin-top:18px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+              <span id="bpCount" style="font-size:13px;font-weight:700;color:var(--accent)">0 pages</span>
+              <button class="btn-secondary" data-ds-upload="true" onclick="document.getElementById('bpInput').click()" data-i18n="bpBtnAddMore">+ Add More</button>
+              <button class="btn-ghost" onclick="sdt.bpSortByName()" data-i18n="bpBtnSortName">🔤 Sort by Name</button>
+              <button class="btn-ghost" onclick="sdt.bpReverseOrder()" data-i18n="bpBtnReverse">↕ Reverse</button>
+              <button class="btn-ghost" style="color:#e04;border-color:#e04" onclick="sdt.bpClearAll()" data-i18n="bpBtnClearAll">🗑 Clear All</button>
+              <button class="btn-primary" onclick="sdt.bpDownloadPDF()" style="margin-left:auto" data-i18n="bpBtnDownloadPdf">⬇ Download PDF</button>
+            </div>
+            <p style="font-size:11.5px;color:var(--text-muted);margin-bottom:14px" data-i18n="bpReorderHint">Drag thumbnails to reorder · click a thumbnail to preview · click ✕ to remove</p>
+            <div id="bpGrid" class="bp-grid"></div>
+          </div>
+          <div id="bpProgress" style="display:none;margin-top:16px">
+            <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:6px" id="bpProgressLabel">Processing…</div>
+            <div class="bp-progress-track"><div class="bp-progress-bar" id="bpProgressBar"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WATERMARK TAB -->
+      <div class="tool-section" id="tab-watermark">
+        <div class="clear-page-bar">
+          <button class="clear-page-btn" onclick="sdt.clearWatermarkPage()">🗑️ Clear Page</button>
+        </div>
+        <div class="card" style="padding:28px">
+          <div class="card-title" data-i18n="wmCardTitle">Text Watermark</div>
+          <div class="drop-zone sdt-drop" id="wmDrop" onclick="document.getElementById('wmInput').click()"
+               ondragover="sdt.dzDrag(event,'wmDrop')" ondragleave="sdt.dzLeave('wmDrop')" ondrop="sdt.dzDrop(event,'wmDrop',sdt.loadWmImg)">
+            <input type="file" id="wmInput" accept="image/*" onchange="sdt.loadWmImg(this.files[0])">
+            <div id="wmPlaceholder" class="sdt-placeholder">
+              <div class="drop-icon">Watermark</div>
+              <div class="drop-label" data-i18n="wmDropLabel">Click or drag image here</div>
+              <div class="drop-hint" data-i18n="wmDropHint">Add a custom text watermark</div>
+            </div>
+          </div>
+          <div id="wmEditor" style="display:none;margin-top:20px">
+            <div style="margin-bottom:14px">
+              <label class="ctrl-label" style="margin-bottom:8px" data-i18n="labelWmText">Watermark Text</label>
+              <input type="text" class="wm-input" id="wmText" value="CONFIDENTIAL" oninput="sdt.updateWmPreview()">
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-group">
+                <label class="ctrl-label" data-i18n="labelWmPos">Position</label>
+                <select class="ctrl-select" id="wmPos" onchange="sdt.updateWmPreview()">
+                  <option value="center">Center</option>
+                  <option value="tile">Tiled</option>
+                  <option value="topleft">Top Left</option>
+                  <option value="topright">Top Right</option>
+                  <option value="bottomleft">Bottom Left</option>
+                  <option value="bottomright">Bottom Right</option>
+                </select>
+              </div>
+              <div class="ctrl-group">
+                <label class="ctrl-label"><span data-i18n="labelWmSize">Font Size</span> <span id="wmSizeLabel">48px</span></label>
+                <div class="slider-wrap"><input type="range" id="wmSize" min="12" max="200" value="48" oninput="sdt.updateWmSizeLabel();sdt.updateWmPreview()" style="--pct:22%"></div>
+              </div>
+              <div class="ctrl-group">
+                <label class="ctrl-label"><span data-i18n="labelWmOp">Opacity</span> <span id="wmOpLabel">40%</span></label>
+                <div class="slider-wrap"><input type="range" id="wmOp" min="5" max="100" value="40" oninput="sdt.updateWmOpLabel();sdt.updateWmPreview()" style="--pct:40%"></div>
+              </div>
+            </div>
+            <div class="ctrl-row" style="margin-top:14px">
+              <div class="ctrl-group">
+                <label class="ctrl-label"><span data-i18n="labelWmRot">Rotation</span> <span id="wmRotLabel">-30 deg</span></label>
+                <div class="slider-wrap"><input type="range" id="wmRot" min="-90" max="90" value="-30" oninput="sdt.updateWmRotLabel();sdt.updateWmPreview()" style="--pct:33%"></div>
+              </div>
+              <div class="ctrl-group">
+                <label class="ctrl-label" data-i18n="labelWmColor">Colour</label>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <input type="color" id="wmColor" value="#ff7b54" onchange="sdt.updateWmPreview()">
+                  <span style="font-size:13px;color:var(--text-muted)">Pick colour</span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:16px">
+              <div class="output-label" data-i18n="labelWmPreview">Preview</div>
+              <div class="output-preview-wrap"><img id="wmOutImg" alt="watermarked"></div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn-primary" onclick="sdt.downloadWatermarked()" data-i18n="btnDownloadWm">Download</button>
+              <button class="btn-secondary" onclick="sdt.wmSendToApp()" data-i18n="btnSendWmToStitcher">Send to Stitcher</button>
+              <button class="btn-secondary" onclick="sdt.clearWatermark()" data-i18n="btnClearWm">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sdt-ad-slot sdt-ad-banner" id="adSlotWatermark" aria-hidden="true">
+          <span>Advertisement</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="toast-wrap" id="sdtToastWrap"></div>
+    </div><!-- /sdt-page -->
+
+    <aside class="sdt-ad-rail sdt-ad-rail-right" aria-hidden="true">
+      <div class="sdt-ad-slot" id="adRailRight"><span>Advertisement<br>160×600</span></div>
+    </aside>
+
+  </div><!-- /sdt-frame -->
+
+  <!-- Bulk PDF Lightbox -->
+  <div id="bpLightbox" style="display:none;position:fixed;inset:0;z-index:300000;background:rgba(10,14,22,0.93);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center">
+    <div class="bp-lb-bar">
+      <button class="bp-lb-nav" id="bpLbPrev" onclick="sdt.bpLbNav(-1)">‹</button>
+      <span id="bpLbCounter" style="font-size:13px;font-weight:700;color:#fff;min-width:80px;text-align:center"></span>
+      <button class="bp-lb-nav" id="bpLbNext" onclick="sdt.bpLbNav(1)">›</button>
+      <span id="bpLbName" style="font-size:12px;color:rgba(255,255,255,0.6);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 12px"></span>
+      <button class="bp-lb-nav" id="bpLbMoveL" onclick="sdt.bpLbMove(-1)" style="font-size:16px">←</button>
+      <button class="bp-lb-nav" id="bpLbMoveR" onclick="sdt.bpLbMove(1)" style="font-size:16px">→</button>
+      <button class="bp-lb-nav" onclick="sdt.bpLbDelete()" style="color:#f66">✕</button>
+      <button class="bp-lb-close" onclick="sdt.bpLbClose()">✕ Close</button>
+    </div>
+    <div class="bp-lb-img-wrap" id="bpLbImgWrap">
+      <img id="bpLbImg" alt="page preview" style="max-width:90vw;max-height:82vh;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,0.7);object-fit:contain">
+    </div>
+    <div class="bp-lb-footer">
+      <span style="font-size:11.5px;color:rgba(255,255,255,0.45)">← → arrow keys to navigate · ← → buttons to reorder</span>
+    </div>
+  </div>
+
+  <!-- remove.bg Setup Modal -->
+  <div id="removeBgSetupModal" style="display:none;position:fixed;inset:0;z-index:999998;background:rgba(10,14,22,0.88);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;padding:20px">
+    <div style="background:var(--surface,#1e2c40);border-radius:20px;padding:32px;max-width:500px;width:100%;border:1.5px solid rgba(255,255,255,0.12);box-shadow:0 32px 80px rgba(0,0,0,0.6);position:relative">
+      <button onclick="hideRemoveBgSetup()" style="position:absolute;top:16px;right:16px;background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:20px;cursor:pointer;line-height:1">✕</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#f96b3f,#ffd060);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✂️</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#fff">Setup remove.bg API Key</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Your key is saved only in your browser — we never see it</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:#ffd060;margin-bottom:10px">📋 How to get your FREE API Key</div>
+        <ol style="font-size:12.5px;color:rgba(255,255,255,0.75);line-height:1.9;padding-left:18px;margin:0">
+          <li>Go to <a href="https://www.remove.bg" target="_blank" style="color:#f96b3f;font-weight:600">remove.bg</a> and click <strong style="color:#fff">Sign Up</strong></li>
+          <li>After logging in, click <strong style="color:#fff">API</strong> in the top nav</li>
+          <li>Click <strong style="color:#fff">Get API Key</strong> and copy it</li>
+          <li>Paste it below and click <strong style="color:#fff">Save Key</strong></li>
+        </ol>
+      </div>
+      <div style="background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.25);border-radius:10px;padding:12px 14px;margin-bottom:20px">
+        <div style="font-size:12px;color:rgba(255,255,255,0.8);line-height:1.7">
+          <strong style="color:#a9a4ff">📊 Free tier:</strong> 50 API calls/month · resets on the 1st of each month
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);display:block;margin-bottom:8px">Paste your API Key here:</label>
+        <input id="removeBgApiKeyInput" type="text" placeholder="e.g. abc123XYZ..."
+          style="width:100%;padding:13px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-size:14px;outline:none;font-family:monospace;box-sizing:border-box"
+          onfocus="this.style.borderColor='#f96b3f'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="saveRemoveBgKey()" style="flex:1;padding:14px;border-radius:12px;background:linear-gradient(135deg,#f96b3f,#ffc060);color:#fff;font-weight:700;font-size:14px;cursor:pointer;border:none">✅ Save Key</button>
+        <button onclick="hideRemoveBgSetup()" style="padding:14px 20px;border-radius:12px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:14px;cursor:pointer;border:1.5px solid rgba(255,255,255,0.15)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download format picker modal (used by multi-tool / watermark download buttons) -->
+  <div id="dlPickerModal" style="display:none;position:fixed;inset:0;z-index:200000;background:rgba(30,44,64,0.55);align-items:center;justify-content:center;backdrop-filter:blur(3px)">
+    <div class="dl-picker-box">
+      <div class="dl-picker-title" id="dlPickerTitle" data-i18n="dlPickerTitle">Choose download format</div>
+      <div class="dl-picker-grid">
+        <button class="dl-fmt-btn dl-pdf" onclick="pickDownloadFormat('pdf')">
+          <span class="dl-fmt-icon">📄</span>
+          <span class="dl-fmt-label">PDF</span>
+          <span class="dl-fmt-sub" data-i18n="dlFmtPdfSub">A4 print-ready</span>
+        </button>
+        <button class="dl-fmt-btn dl-jpg" onclick="pickDownloadFormat('jpg')">
+          <span class="dl-fmt-icon">🖼</span>
+          <span class="dl-fmt-label">JPG</span>
+          <span class="dl-fmt-sub" data-i18n="dlFmtJpgSub">Smaller file size</span>
+        </button>
+        <button class="dl-fmt-btn dl-png" onclick="pickDownloadFormat('png')">
+          <span class="dl-fmt-icon">🖼</span>
+          <span class="dl-fmt-label">PNG</span>
+          <span class="dl-fmt-sub" data-i18n="dlFmtPngSub">Lossless quality</span>
+        </button>
+      </div>
+      <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="cancelDownloadPicker()" data-i18n="btnCancel">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="assets/i18n.js"></script>
+  <script src="assets/app.js?v=9.5"></script>
+
+  <!-- ============================================================
+       Local File Access Gate — must load AFTER app.js so it can
+       wrap triggerFileInput() / handleFile(). Do NOT reorder.
+
+       This is a SELF-IMPOSED, in-app control, not a real OS
+       permission. There's nothing for the phone's Settings app to
+       track here — picking a file was never gated by the OS to
+       begin with. Access defaults to ON; the toggle just lets a
+       user freeze uploads within this app if they want to, and
+       nothing more.
+       ============================================================ -->
+  <script>
+  (function () {
+    const STORAGE_KEY = 'ds_file_access_enabled'; // '1' | '0' | null (default: treated as on)
+
+    const DSGate = {
+      // Defaults to enabled unless the user has explicitly turned it off.
+      isEnabled() { return localStorage.getItem(STORAGE_KEY) !== '0'; },
+
+      setEnabled(on) {
+        localStorage.setItem(STORAGE_KEY, on ? '1' : '0');
+        this._applyVisualState();
+      },
+
+      _applyVisualState() {
+        const on = this.isEnabled();
+        document.body.classList.toggle('ds-files-denied', !on);
+        const btn = document.getElementById('dsFileAccessBtn');
+        const icon = document.getElementById('dsFileAccessBtnIcon');
+        const text = document.getElementById('dsFileAccessBtnText');
+        const toggle = document.getElementById('dsAccessToggle');
+        if (btn) btn.classList.toggle('on', on);
+        if (icon) icon.textContent = on ? '✅' : '🔒';
+        if (text) text.textContent = on ? 'Local access' : 'Access frozen';
+        if (toggle) toggle.checked = on;
+      },
+
+      openPanel() {
+        const toggle = document.getElementById('dsAccessToggle');
+        if (toggle) toggle.checked = this.isEnabled();
+        document.getElementById('dsAccessPanel').classList.add('show');
+      },
+
+      closePanel() {
+        document.getElementById('dsAccessPanel').classList.remove('show');
+      },
+
+      _deniedToast() {
+        if (typeof toast === 'function') {
+          toast("Local access is frozen — turn it back on to upload.", 'error');
+        } else {
+          alert("Local access is frozen — turn it back on to upload.");
+        }
+      },
+
+      init() {
+        this._applyVisualState();
+
+        document.addEventListener('click', (e) => {
+          if (this.isEnabled()) return;
+          const el = e.target.closest('.drop-zone, [onclick*="triggerFileInput"], input[type=file], [data-ds-upload="true"]');
+          if (el) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            this._deniedToast();
+          }
+        }, true);
+
+        document.addEventListener('drop', (e) => {
+          if (this.isEnabled()) return;
+          const el = e.target.closest('.drop-zone, [data-ds-upload="true"]');
+          if (el) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            this._deniedToast();
+          }
+        }, true);
+
+        if (window.sdt) {
+          ['loadMultiToolFile', 'pcLoadFile', 'bpAddFiles', 'loadWmImg'].forEach((fn) => {
+            if (typeof window.sdt[fn] === 'function') {
+              const original = window.sdt[fn];
+              window.sdt[fn] = (...args) => {
+                if (!DSGate.isEnabled()) { DSGate._deniedToast(); return; }
+                return original.apply(window.sdt, args);
+              };
+            }
+          });
+        }
+        if (typeof window.triggerFileInput === 'function') {
+          const original = window.triggerFileInput;
+          window.triggerFileInput = (id) => {
+            if (!this.isEnabled()) { this._deniedToast(); return; }
+            return original(id);
+          };
+        }
+        if (typeof window.handleFile === 'function') {
+          const original = window.handleFile;
+          window.handleFile = (file, docId, slot) => {
+            if (!this.isEnabled()) { this._deniedToast(); return; }
+            return original(file, docId, slot);
+          };
+        }
+      }
+    };
+
+    window.DSGate = DSGate;
+    document.addEventListener('DOMContentLoaded', () => DSGate.init());
+  })();
+  </script>
+
+  <!-- ============================================================
+       Privacy Notice — non-blocking, dismissible banner shown once
+       on first visit. Purely informational; does not gate anything
+       itself. Must load AFTER the gate script above.
+       ============================================================ -->
+  <script>
+    const PrivacyNotice = {
+      STORAGE_KEY: 'ds_privacy_notice_seen',
+
+      init() {
+        if (!localStorage.getItem(this.STORAGE_KEY)) {
+          setTimeout(() => {
+            document.getElementById('privacyBanner').classList.add('show');
+          }, 500);
+        }
+      },
+
+      gotIt() {
+        localStorage.setItem(this.STORAGE_KEY, '1');
+        document.getElementById('privacyBanner').classList.remove('show');
+      },
+
+      manage() {
+        this.gotIt();
+        DSGate.openPanel();
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => PrivacyNotice.init());
+  </script>
+
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof updateAllRemoveBgCounters === 'function') updateAllRemoveBgCounters();
+      if (typeof updateAllApiKeyStatus === 'function') updateAllApiKeyStatus();
+    });
+  </script>
+</body>
+</html>

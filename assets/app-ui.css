@@ -1,0 +1,462 @@
+/* ============================================================
+   DocStitcher — App UI v2.1 (modern redesign layer)
+   Loads AFTER assets/style.css and only overrides app.html.
+   Does not touch shared selectors used by tools.html / landing.
+============================================================ */
+
+:root {
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 13px;
+  --shadow-soft: 0 18px 44px rgba(255,158,100,0.14), 0 4px 14px rgba(30,44,64,0.05);
+  --shadow-pop: 0 26px 60px rgba(255,140,80,0.20), 0 8px 20px rgba(30,44,64,0.08);
+  --line: rgba(240,203,160,0.55);
+  --topbar-h: 64px;
+}
+
+html, body { overflow-x: clip; }
+
+/* ============================================================
+   1. NAVBAR — true edge-to-edge, full viewport width
+============================================================ */
+.header.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  width: 100%;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  background: rgba(255, 250, 245, 0.86);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 18px rgba(255,158,100,0.06);
+}
+.app-topbar-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 28px;
+}
+.header-brand { gap: 11px; }
+.brand-icon {
+  width: 38px; height: 38px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #f96b3f 0%, #f9a640 60%, #ffd55e 100%);
+  box-shadow: 0 8px 18px rgba(249,107,63,0.34), inset 0 1px 0 rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+.brand-name { font-size: 16.5px; letter-spacing: -0.02em; line-height: 1.1; }
+.brand-tagline { font-size: 10.5px; margin-top: 1px; }
+.header-actions-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+#langPickerBtn {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 800 !important;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 40px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px !important;
+  border: 1.5px solid var(--accent) !important;
+  background: rgba(249,107,63,0.07) !important;
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(249,107,63,0.14);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+#langPickerBtn:hover { background: var(--accent) !important; color: #fff !important; transform: translateY(-1px); }
+#langPickerBtn:active { transform: translateY(0) scale(0.96); box-shadow: 0 1px 3px rgba(249,107,63,0.25); }
+#helpBtn { border-radius: 999px; height: 32px; display: inline-flex; align-items: center; }
+
+/* -- Tactile press feedback on all buttons -- */
+.btn-primary, .btn-secondary, .btn-ghost, #langPickerBtn,
+.dl-fmt-btn, .sign-preset-btn, .target-size-btn, .icon-btn, .joy-btn {
+  transition: transform 0.13s cubic-bezier(.22,.68,0,1.2), box-shadow 0.13s, background 0.15s, border-color 0.15s !important;
+}
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-ghost:active:not(:disabled),
+.target-size-btn:active:not(:disabled),
+.icon-btn:active,
+.dl-fmt-btn:active {
+  transform: translateY(1px) scale(0.97) !important;
+  filter: brightness(0.97);
+}
+
+@media (max-width: 620px) {
+  .app-topbar-inner { padding: 0 14px; }
+  .brand-tagline { display: none; }
+}
+
+/* ============================================================
+   2. PAGE FRAME — center column + ad rails (below navbar)
+============================================================ */
+.ds-frame {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,900px) minmax(0,1fr);
+  align-items: start;
+  gap: 0;
+}
+
+.ad-rail {
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+  height: calc(100dvh - var(--topbar-h) - 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding-top: 0;
+}
+.ad-rail-left { justify-self: end; }
+.ad-rail-right { justify-self: start; }
+
+.ad-slot {
+  width: 160px;
+  min-height: 280px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(244,168,108,0.55);
+  background: rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px;
+}
+.ad-slot span { opacity: 0.7; }
+
+/* Hide rails only when there truly isn't room for 160px+160px+900px center */
+@media (max-width: 1320px) {
+  .ds-frame { grid-template-columns: 1fr; }
+  .ad-rail { display: none; }
+}
+
+/* In-feed ads — inserted by renderDocuments() at two different cadences.
+   Only one variant is visible at a time per viewport width, so a desktop
+   user never sees both side rails AND the narrow per-card ad, and a
+   mobile user never sees a desktop-only slot meant for wider screens. */
+.in-feed-ad-slot {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  grid-column: 1 / -1;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(244,168,108,0.55);
+  background: rgba(255,255,255,0.4);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px;
+}
+.in-feed-ad-slot span { opacity: 0.7; }
+
+/* Narrow/mobile: side rails are hidden (see breakpoint above), so this
+   shows after every single card to keep ad inventory flowing. */
+@media (max-width: 1320px) {
+  .in-feed-ad-slot-narrow { display: flex; min-height: 100px; }
+}
+
+/* Wide/desktop: side rails are already showing, so this only adds a
+   periodic banner every 2 rows (4 cards, since the grid is 2 columns). */
+@media (min-width: 1321px) {
+  .in-feed-ad-slot-wide { display: flex; min-height: 90px; }
+}
+
+#app-main { min-width: 0; }
+.app-shell.page-wrap {
+  max-width: 900px;
+  padding: 18px 20px 28px;
+  margin: 0 auto;
+}
+
+.glow-line.app-glow { display: none; }
+
+/* ============================================================
+   3. HELP PANEL — modern accordion card
+============================================================ */
+.help-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,247,236,0.92));
+  box-shadow: var(--shadow-soft);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.help-panel::before {
+  content: '💡';
+  position: absolute; top: -14px; left: 20px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg,#f9a825,#f96b3f);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; box-shadow: 0 8px 16px rgba(249,107,63,0.32);
+}
+.help-panel h3 { margin-top: 4px; font-size: 14.5px; }
+.help-panel ol { display: flex; flex-direction: column; gap: 8px; padding-left: 0; counter-reset: help-step; }
+.help-panel li {
+  list-style: none;
+  counter-increment: help-step;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 0;
+}
+.help-panel li::before {
+  content: counter(help-step);
+  position: absolute; left: 0; top: 0;
+  width: 21px; height: 21px; border-radius: 7px;
+  background: rgba(249,107,63,0.12); color: var(--accent);
+  font-family: var(--font-display); font-weight: 800; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ============================================================
+   4. TOOLBAR — compact hero summary strip
+============================================================ */
+.batch-toolbar.app-toolbar {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 180% at 0% 0%, rgba(249,166,64,0.14), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,247,236,0.85));
+  box-shadow: var(--shadow-soft);
+  padding: 14px 20px;
+  margin: 0 0 16px;
+}
+.toolbar-sub { margin-top: 1px; }
+.toolbar-sub #readyCount {
+  font-family: var(--font-display); font-weight: 800; color: var(--accent);
+}
+.toolbar-actions .btn-primary,
+.toolbar-actions .btn-secondary { border-radius: 999px; padding: 9px 16px; }
+
+/* ============================================================
+   5. DOCUMENT CARDS — compact, no-scroll-to-use layout
+   Reflows the existing fixed DOM order with grid-template-areas
+   so every control is visible without scrolling the card.
+============================================================ */
+.documents-list.app-doc-list {
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+}
+@media (max-width: 860px) {
+  .documents-list.app-doc-list { grid-template-columns: 1fr; }
+}
+
+.document-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  grid-template-areas:
+    "preview head"
+    "preview settings"
+    "slots    slots"
+    "sigtoggle sigtoggle"
+    "sigscale sigscale"
+    "actions  actions";
+  align-content: start;
+  column-gap: 12px;
+  row-gap: 9px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,250,242,0.93));
+  box-shadow: var(--shadow-soft);
+  padding: 14px 15px 14px;
+  overflow: hidden;
+}
+.document-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--gold));
+}
+.document-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-pop); }
+
+/* -- head: name + kicker + remove -- */
+.document-card-head {
+  grid-area: head;
+  margin-bottom: 0;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+}
+.document-kicker {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(249,107,63,0.1); color: var(--accent);
+  padding: 2px 9px; border-radius: 999px; font-size: 10px;
+  margin-bottom: 4px;
+}
+.doc-name-input { font-size: clamp(15.5px, 1.7vw, 18px); width: 100% !important; }
+.icon-btn {
+  width: 26px; height: 26px; border-radius: 9px;
+  background: rgba(224,69,96,0.08); color: var(--danger);
+  border-color: rgba(224,69,96,0.22); flex-shrink: 0;
+}
+.icon-btn:hover { background: rgba(224,69,96,0.16); border-color: rgba(224,69,96,0.4); }
+
+/* -- settings: orientation / quality / estimate, single tight row that never wraps -- */
+.document-settings {
+  grid-area: settings;
+  display: grid;
+  grid-template-columns: 96px 1fr 80px;
+  align-items: start;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+.document-settings .ctrl-group { min-width: 0; gap: 3px; }
+.document-settings .ctrl-group.quality-control { min-width: 0; }
+.ctrl-label { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctrl-select {
+  border-radius: 8px;
+  padding: 6px 24px 6px 8px !important;
+  font-size: 11.5px;
+  background-position: right 7px center !important;
+  background-size: 9px !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.document-settings .target-size-wrap { margin-top: 4px; gap: 5px; }
+.target-size-input { width: 68px !important; padding: 4px 6px !important; font-size: 10px !important; }
+.target-size-btn { padding: 4px 8px !important; font-size: 10px !important; white-space: nowrap; }
+.estimate-pill {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 1px; min-height: 0; padding: 5px 8px;
+  background: #fff; border-radius: 9px;
+}
+.estimate-pill span { font-size: 8px; white-space: nowrap; }
+.estimate-pill strong { font-size: 11.5px; line-height: 1.2; }
+
+/* -- preview: small thumbnail rail spanning left side -- */
+.doc-layout-preview {
+  grid-area: preview;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.paper-mini { border-radius: 4px; }
+.doc-layout-preview.portrait .paper-mini { width: 64px !important; }
+.doc-layout-preview.landscape .paper-mini { width: 64px !important; height: 45px !important; }
+.preview-canvas-hint { display: none; }
+
+/* -- signature toggle: compact pill -- */
+.signature-toggle {
+  grid-area: sigtoggle;
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.7);
+  width: fit-content;
+  margin: 0;
+  font-size: 11px;
+}
+.sign-scale-wrap { grid-area: sigscale; margin: 0; padding: 8px 11px; }
+
+/* -- slots: fills remaining card height, scales to fit -- */
+.doc-slot-grid {
+  grid-area: slots;
+  gap: 8px;
+}
+.doc-slot {
+  border-radius: 11px;
+  background: rgba(255,255,255,0.66);
+  padding: 8px;
+}
+.slot-heading { font-size: 10.5px; margin-bottom: 5px; }
+.compact-drop {
+  min-height: 92px !important;
+  height: auto !important;
+  border-radius: 10px;
+  border-style: dashed;
+  background: repeating-linear-gradient(135deg, rgba(249,107,63,0.03) 0 10px, transparent 10px 20px);
+  transition: border-color 0.2s, background 0.2s, transform 0.18s;
+  padding: 8px !important;
+}
+.compact-drop:hover { border-color: var(--accent); transform: translateY(-1px); }
+.compact-drop .drop-icon { font-size: 13px; }
+.compact-drop .drop-label { font-size: 10px; }
+.compact-drop .drop-hint { font-size: 9px; }
+.compact-drop .drop-preview { max-height: 96px !important; }
+.doc-slot .slot-info { font-size: 10.5px; padding-top: 5px; }
+
+/* -- actions: slim bottom row -- */
+.document-actions {
+  grid-area: actions;
+  margin: 2px 0 0;
+  gap: 7px;
+}
+.document-actions .btn-primary,
+.document-actions .btn-secondary {
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 7px 13px;
+}
+
+@media (max-width: 560px) {
+  .document-card {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "preview"
+      "settings"
+      "slots"
+      "sigtoggle"
+      "sigscale"
+      "actions";
+  }
+  .doc-layout-preview { justify-content: flex-start; }
+}
+
+/* ============================================================
+   6. FAB — single-doc tools
+============================================================ */
+#sdt-fab {
+  position: fixed;
+  right: 20px; bottom: 20px; z-index: 400;
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 13px 18px 13px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1e2c40, #344661);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(30,44,64,0.34), 0 6px 14px rgba(249,107,63,0.18);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+}
+#sdt-fab svg { flex-shrink: 0; }
+.fab-label { font-family: var(--font-display); font-size: 12.5px; font-weight: 700; }
+@media (max-width: 560px) {
+  .fab-label { display: none; }
+  #sdt-fab { padding: 13px; }
+}
+
+/* ============================================================
+   7. MODALS — softened polish
+============================================================ */
+.dl-picker-box, .slot-picker-box {
+  border-radius: var(--radius-xl);
+  box-shadow: 0 40px 90px rgba(10,16,28,0.35);
+}
+.dl-fmt-btn { border-radius: 14px; }
+#sigPlacerModal canvas { border-radius: 14px; }
+.sig-placer-title { font-size: 16px; }
+
+/* ============================================================
+   8. TOASTS
+============================================================ */
+.toast { border-radius: 12px; font-weight: 600; }
