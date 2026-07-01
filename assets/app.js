@@ -1756,11 +1756,20 @@ window.sdt = (() => {
     });
   }
 
-  /* ---- Expose to global scope so inline onclick can reach them ---- */
+  /* ---- Expose to global scope so inline onclick can reach them, AND so ----
+     the separate Photo Maker (mp) module — a different closure entirely —
+     can call them too. Without this, mp.removeBg() throws a silent
+     "removeBgWithApi is not defined" ReferenceError and falls back to the
+     local remover on every single call, regardless of the mode selected. */
   window.showRemoveBgSetup = showRemoveBgSetup;
   window.hideRemoveBgSetup = hideRemoveBgSetup;
   window.saveRemoveBgKey   = saveRemoveBgKey;
   window.clearRemoveBgKey  = clearRemoveBgKey;
+  window.getRemoveBgApiKey        = getRemoveBgApiKey;
+  window.updateAllRemoveBgCounters = updateAllRemoveBgCounters;
+  window.updateAllApiKeyStatus    = updateAllApiKeyStatus;
+  // removeBgWithApi is defined further down (after canvasToBlob/blobToCanvas),
+  // so it's exposed right after its own definition — see below.
 
   function cloneMtState(state = mtState) {
     return {
@@ -3400,18 +3409,42 @@ window.sdt = (() => {
     const blob = await canvasToBlob(sourceCanvas, 'image/png');
     const form = new FormData();
     form.append('image_file', blob, 'docstitcher-current.png');
-    form.append('size', 'auto');
+    // 'preview' uses your free monthly preview allowance (up to 0.25MP, plenty
+    // for passport/ID photos). 'auto' tries full resolution and fails with a
+    // 402 Insufficient Credits error on free-tier accounts with 0 paid credits,
+    // which was silently triggering the fallback to the local remover.
+    form.append('size', 'preview');
     form.append('format', 'png');
 
-    const response = await fetch(REMOVE_BG_API_URL, {
-      method: 'POST',
-      headers: {'X-Api-Key': apiKey},
-      body: form,
-    });
+    let response;
+    try {
+      response = await fetch(REMOVE_BG_API_URL, {
+        method: 'POST',
+        headers: {'X-Api-Key': apiKey},
+        body: form,
+      });
+    } catch (networkErr) {
+      // fetch() throws a generic TypeError for network failures AND for CORS
+      // preflight rejections — the browser never lets JS see the real reason.
+      // Surface this distinctly so it isn't confused with an API-side error.
+      const error = new Error(
+        'Could not reach remove.bg from the browser (network error or blocked by CORS). ' +
+        'Open DevTools → Network/Console tab and try again to confirm the exact cause — this ' +
+        'call cannot succeed from client-side JS alone if remove.bg rejects the cross-origin request.'
+      );
+      error.isNetworkOrCors = true;
+      error.cause = networkErr;
+      throw error;
+    }
 
     if (!response.ok) {
       const details = await response.text().catch(() => '');
-      const error = new Error(`remove.bg API failed (${response.status}). ${details}`.trim());
+      let reason = `HTTP ${response.status}`;
+      if (response.status === 403) reason = 'Authentication failed — API key is invalid';
+      else if (response.status === 402) reason = 'Insufficient credits on your remove.bg account';
+      else if (response.status === 429) reason = 'Rate limit exceeded';
+      else if (response.status === 400) reason = 'Invalid request/image';
+      const error = new Error(`remove.bg API failed: ${reason} (${response.status}). ${details}`.trim());
       error.status = response.status;
       throw error;
     }
@@ -3420,6 +3453,7 @@ window.sdt = (() => {
     incrementRemoveBgUsage(); // count only on success
     return result;
   }
+  window.removeBgWithApi = removeBgWithApi;
 
   async function removeBgWithLocal(sourceCanvas, onStatus) {
     if (onStatus) onStatus('Loading the built-in AI person detector...');
@@ -3508,7 +3542,8 @@ window.sdt = (() => {
           _mtBgMask = await removeBgWithApi(sourceCanvas);
         } catch (apiError) {
           console.warn(apiError);
-          status.textContent = 'remove.bg API is unavailable or over limit. Switching to the built-in local remover...';
+          toast('remove.bg: ' + apiError.message, 'error');
+          status.textContent = `remove.bg failed (${apiError.message}). Switching to the built-in local remover...`;
           _mtBgMask = await removeBgWithLocal(sourceCanvas, message => { status.textContent = message; });
         }
       } else {
@@ -4174,7 +4209,7 @@ const mp = (() => {
               <label class="ctrl-label" for="mpBgMode${pi}">Removal Method</label>
               <select class="ctrl-select" id="mpBgMode${pi}" ${p.bgBusy?'disabled':''} onchange="mp.setBgMode(${pi},this.value)">
                 <option value="local" ${p.bgMode!=='api'?'selected':''}>🤖 Built-in Local AI (free, Unlimited)</option>
-                <option value="api" ${p.bgMode==='api'?'selected':''}>☁️ remove.bg API Best Quality (your key, 50 free/month)</option>
+                <option value="api" ${p.bgMode==='api'?'selected':''}>☁️ remove.bg API (your key, 50 free previews/month)</option>
               </select>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px">
@@ -4377,7 +4412,8 @@ const mp = (() => {
           cutout = await removeBgWithApi(sourceCanvas);
         } catch (apiError) {
           console.warn(apiError);
-          setBgStatus(pi, 'remove.bg API is unavailable or over limit. Switching to the built-in local remover...');
+          toast('remove.bg: ' + apiError.message, 'error');
+          setBgStatus(pi, `remove.bg failed (${apiError.message}). Switching to the built-in local remover...`);
           cutout = await PersonBackground.remove(sourceCanvas, message => setBgStatus(pi, message));
         }
       } else {
