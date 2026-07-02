@@ -145,25 +145,25 @@
         <div class="contact-card-icon contact-card-icon--teal">📧</div>
         <div class="contact-card-title">General Support</div>
         <div class="contact-card-desc">For help with any tool, questions about features, or anything else about using DocStitcher.</div>
-        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+        <a href="mailto:docstitcher@gmail.com" class="contact-card-link">docstitcher@gmail.com →</a>
       </div>
       <div class="contact-card contact-card--coral">
         <div class="contact-card-icon contact-card-icon--coral">🐛</div>
         <div class="contact-card-title">Bug Reports</div>
         <div class="contact-card-desc">Found something that isn't working right? Please let us know — include your browser and the steps to reproduce it.</div>
-        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+        <a href="mailto:docstitcher@gmail.com" class="contact-card-link">docstitcher@gmail.com →</a>
       </div>
       <div class="contact-card contact-card--amber">
         <div class="contact-card-icon contact-card-icon--amber">💡</div>
         <div class="contact-card-title">Feature Requests</div>
         <div class="contact-card-desc">Have an idea for a new tool or improvement? We read every suggestion — many features came from user requests.</div>
-        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+        <a href="mailto:docstitcher@gmail.com" class="contact-card-link">docstitcher@gmail.com →</a>
       </div>
       <div class="contact-card contact-card--purple">
         <div class="contact-card-icon contact-card-icon--purple">⚖️</div>
         <div class="contact-card-title">Privacy &amp; Legal</div>
         <div class="contact-card-desc">For privacy policy questions, data concerns, DMCA notices, or legal matters related to DocStitcher.</div>
-        <a href="mailto:docstitcherapp.xyzabc@gmail.com" class="contact-card-link">docstitcherapp.xyzabc@gmail.com →</a>
+        <a href="mailto:docstitcher@gmail.com" class="contact-card-link">docstitcher@gmail.com →</a>
       </div>
     </div>
 
@@ -221,7 +221,7 @@
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Does DocStitcher upload my files to a server? <span class="faq-arrow">⌄</span></div>
-        <div class="faq-a">No. Everything runs inside your browser using JavaScript. Your Aadhaar, PAN card, photos, or any other file never leaves your device. We have no backend that receives files.</div>
+        <div class="faq-a">No, by default. Everything runs inside your browser using JavaScript. Your Aadhaar, PAN card, photos, or any other file never leaves your device, and we have no backend that receives files. The one exception is optional: if you turn on the remove.bg API mode for background removal (using your own remove.bg API key), that specific photo is uploaded to remove.bg's external servers to be processed. This mode is off by default, requires you to opt in manually, and the app asks you to confirm before the first upload. See the next question and our <a href="privacy.html">Privacy Policy</a> for full details.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -236,7 +236,7 @@
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">The background removal isn't working well. What can I do? <span class="faq-arrow">⌄</span></div>
-        <div class="faq-a">The built-in background remover uses an on-device AI model that works best with clear, well-lit photos against a simple background. For complex images, you can enter your own remove.bg API key in the tool settings for much higher accuracy results.</div>
+        <div class="faq-a">The built-in "Local AI" background remover works entirely on your device and works best with clear, well-lit photos against a simple background. For complex images, you can optionally enter your own remove.bg API key in the tool settings for much higher accuracy results. <strong>Please note:</strong> switching to remove.bg is different from the default local mode — it uploads that photo to remove.bg's external servers for processing. It's entirely optional, off unless you turn it on, and the app will confirm with you before it sends anything the first time you use it.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -272,7 +272,7 @@
   <script src="assets/i18n.js"></script>
   <script src="assets/app.js?v=9.0"></script>
   <script>
-    const SUPPORT_EMAIL = 'docstitcherapp.xyzabc@gmail.com';
+    const SUPPORT_EMAIL = 'docstitcher@gmail.com';
 
     function toggleFaq(el) {
       el.classList.toggle('open');
