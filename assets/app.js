@@ -2189,14 +2189,17 @@ window.sdt = (() => {
       redrawCropOverlay();
     };
 
-    let _lastMoveTime = 0;
     cv.onmousemove = e => {
       if(!mtCropDragging) return;
-      // Throttle to ~30fps on low-end PCs (2-4GB RAM, Windows 7) to prevent freezing.
-      // On fast machines this has no visible effect since rAF already batches redraws.
-      const now = Date.now();
-      if (now - _lastMoveTime < 33) return;
-      _lastMoveTime = now;
+      // FIX (crop box lagging behind a fast cursor swipe): this used to ALSO
+      // throttle how often we read/clamp the mouse position (skip unless
+      // 33ms had passed). That math is essentially free even on very old
+      // hardware — it's the canvas repaint that's expensive. But skipping the
+      // read meant a fast flick could drop the last few real cursor positions,
+      // so the box visibly froze behind the cursor. We now read+clamp the
+      // position on every event; only the actual repaint stays capped to once
+      // per animation frame via scheduleRedrawCropOverlay()'s existing rAF
+      // dedup below, so the redraw cost on slow PCs is completely unchanged.
       const pos = clampCanvasPos(getCropCanvasPos(e.clientX, e.clientY), cv);
       const x=Math.min(mtCropStartX, pos.x), y=Math.min(mtCropStartY, pos.y);
       const w=Math.abs(pos.x - mtCropStartX),   h=Math.abs(pos.y - mtCropStartY);
@@ -4740,19 +4743,30 @@ const mp = (() => {
       p.dragging = true; p.startX = pos.x; p.startY = pos.y;
       p.cropDisplayRect = null;
     };
-    let _mpLastMove = 0;
+    // FIX (crop box lagging behind a fast cursor swipe): previously the ONLY
+    // throttle here was a 33ms Date.now() gate that skipped BOTH reading the
+    // mouse position AND repainting. Reading/clamping the position is cheap
+    // math — it's the canvas repaint (redrawCropDragOverlay) that's expensive.
+    // Gating both together meant a fast flick could drop the last few real
+    // cursor positions, so the box visibly froze behind the cursor. We now
+    // read the position on every event, and instead cap the repaint itself to
+    // once per animation frame (requestAnimationFrame dedup below) — the same
+    // safe pattern already used by the main image-editor crop tool. This keeps
+    // the actual redraw cost on slow PCs unchanged (never more than 1 paint
+    // per screen refresh), it just stops throwing away position data.
+    let _mpCropRafId = null;
+    function scheduleMpCropRedraw(){
+      if (_mpCropRafId) return; // already queued — skip to avoid double-paint
+      _mpCropRafId = requestAnimationFrame(() => { _mpCropRafId = null; redrawCropDragOverlay(pi); });
+    }
     cv.onmousemove = e => {
       if (!p.dragging) return;
-      // Throttle to ~30fps on low-end PCs (2-4 GB RAM, Windows 7) to prevent freezing.
-      const now = Date.now();
-      if (now - _mpLastMove < 33) return;
-      _mpLastMove = now;
       const pos = getPos(e.clientX, e.clientY);
       p.cropDisplayRect = {
         x: Math.min(p.startX, pos.x), y: Math.min(p.startY, pos.y),
         w: Math.abs(pos.x - p.startX), h: Math.abs(pos.y - p.startY)
       };
-      redrawCropDragOverlay(pi);
+      scheduleMpCropRedraw();
     };
     // Shared finalize-drag logic, used by the canvas mouseup handler AND the
     // document-level fallback below, so a release outside the canvas still
@@ -4760,6 +4774,7 @@ const mp = (() => {
     function commitCropDrag(){
       if (!p.dragging) return;
       p.dragging = false;
+      if (_mpCropRafId) { cancelAnimationFrame(_mpCropRafId); _mpCropRafId = null; }
       if (p.cropDisplayRect && p.cropDisplayRect.w > 4 && p.cropDisplayRect.h > 4) {
         p.state.cropRect = {
           x: Math.round(p.cropDisplayRect.x / p.displayScale),
