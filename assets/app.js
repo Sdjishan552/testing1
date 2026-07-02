@@ -4026,6 +4026,10 @@ const mp = (() => {
   let mpImgDir = 'row';   // 'row' | 'col'
   let mpCorner = 'tl';    // 'tl' | 'tr' | 'bl' | 'br'
   let persons = []; // [{img, canvas, state, cropRect, cropDisplayRect, displayScale, dragging, startX, startY}]
+  // RAF handle for the single-photo quality-slider size estimate — dedups so
+  // dragging the slider doesn't re-encode a JPEG on every 'input' tick,
+  // just once per animation frame (same low-end-PC-safe pattern used elsewhere).
+  let _mpQualRafId = null;
 
   // Paper sizes [width_mm, height_mm] — portrait base dimensions
   const MP_PAPER_SIZES = {
@@ -4914,6 +4918,8 @@ const mp = (() => {
       const ph = document.getElementById('mpSingleImgPlaceholder');
       if (ph) ph.style.display = 'block';
       if (zoomInfo) zoomInfo.textContent = 'Upload a photo above to see it here.';
+      const estEl = document.getElementById('mpSingleQualSizeEst');
+      if (estEl) estEl.textContent = '≈ estimated size: -';
       return;
     }
 
@@ -4956,6 +4962,64 @@ const mp = (() => {
       zoomImg.style.height  = dispH + 'px';
       zoomImg.style.objectFit = 'fill';
       if (zoomInfo) zoomInfo.textContent = `${(wMM/10).toFixed(1)} × ${(hMM/10).toFixed(1)} cm · print ratio`;
+    }
+
+    // Sync the quality slider to whichever person is currently shown — each
+    // person keeps their own saved quality (defaults to 85) so switching the
+    // "Person" dropdown doesn't clobber anyone's chosen setting.
+    const qualEl = document.getElementById('mpSingleQual');
+    const qualLbl = document.getElementById('mpSingleQualLabel');
+    if (qualEl && targetPerson) {
+      const q = targetPerson.state.quality || 85;
+      qualEl.value = q;
+      qualEl.style.setProperty('--pct', ((q - 1) / 99 * 100).toFixed(1) + '%');
+      if (qualLbl) qualLbl.textContent = q + '%';
+    }
+    updateSingleQualSizeEst(targetPerson);
+  }
+
+  // Called on every 'input' tick of the single-photo quality slider.
+  function mpSetSingleQuality(val) {
+    const sel = document.getElementById('mpSingleImgSelector');
+    const pi = sel ? parseInt(sel.value) : 0;
+    const p = persons[pi] && persons[pi].resultCanvas
+      ? persons[pi]
+      : persons.slice(0, personCount).find(pr => pr.resultCanvas);
+    if (!p) return;
+    p.state.quality = Number(val);
+    const lbl = document.getElementById('mpSingleQualLabel');
+    if (lbl) lbl.textContent = val + '%';
+    const rangeEl = document.getElementById('mpSingleQual');
+    if (rangeEl) rangeEl.style.setProperty('--pct', ((val - 1) / 99 * 100).toFixed(1) + '%');
+    updateSingleQualSizeEst(p);
+    setTimeout(saveMpState, 60);
+  }
+
+  // Debounced (RAF) wrapper — dragging the slider fires many 'input' events in
+  // a burst; this makes sure we only ever do the actual JPEG re-encode (the
+  // expensive part) once per animation frame, same low-end-PC-safe pattern
+  // used for the crop-drag redraws elsewhere in this file.
+  function updateSingleQualSizeEst(p) {
+    if (_mpQualRafId) return;
+    _mpQualRafId = requestAnimationFrame(() => {
+      _mpQualRafId = null;
+      computeSingleQualSizeEst(p);
+    });
+  }
+
+  function computeSingleQualSizeEst(p) {
+    const estEl = document.getElementById('mpSingleQualSizeEst');
+    if (!estEl) return;
+    if (!p || !p.resultCanvas) { estEl.textContent = '≈ estimated size: -'; return; }
+    try {
+      const q = Math.max(0.1, Math.min(1, (p.state.quality || 85) / 100));
+      const dataUrl = p.resultCanvas.toDataURL('image/jpeg', q);
+      const estBytes = Math.round(dataUrl.split(',')[1].length * 0.75);
+      estEl.innerHTML = '≈ estimated JPG size: <span class="mt-qual-size-val">' + fmtBytes(estBytes) +
+        '</span> <span style="opacity:.75">(PNG download is always lossless — slider doesn\'t change it)</span>';
+    } catch(e) {
+      // Very low-end PC / huge canvas edge case — fail quietly, don't block the UI.
+      estEl.textContent = '≈ estimated size: -';
     }
   }
 
@@ -5086,7 +5150,9 @@ const mp = (() => {
     ctx.drawImage(cv, 0, 0);
 
     const mime = fmt === 'png' ? 'image/png' : 'image/jpeg';
-    const quality = fmt === 'png' ? 1.0 : 0.92;
+    // PNG is always lossless (1.0). JPG uses this person's own quality slider
+    // setting (from the Single Photo Preview card), defaulting to 85 if unset.
+    const quality = fmt === 'png' ? 1.0 : Math.max(0.1, Math.min(1, (p.state.quality || 85) / 100));
     const dataUrl = out.toDataURL(mime, quality);
     const ext = fmt === 'png' ? 'png' : 'jpg';
     const a = document.createElement('a');
@@ -5553,6 +5619,7 @@ const mp = (() => {
   return {setPersonCount, setOrient, loadFile, onDrop, rotate, setRotation, flip, applyCrop, clearCrop,
           setSize, setSizeRaw, deltaCount, clearPerson, clearPhotoMakerPage, setBgMode, removeBg, fillBg, restoreBg,
           refreshPreview, refreshSingleImagePreview, downloadSingleImageFromSelector, downloadPDF, downloadFillPagePDF, downloadSingleImage,
+          mpSetSingleQuality,
           printPDF, printFillPagePDF,
           setMpPaperSize, setMpCustomDim, setMpImgDir, setMpCorner, mpSetBrightness, mpSendToApp};
 })();
