@@ -2204,26 +2204,20 @@ window.sdt = (() => {
       scheduleRedrawCropOverlay();
     };
 
-    cv.onmouseup = e => {
-      if(!mtCropDragging) return;
-      mtCropDragging=false;
-      if (_cropRafId) { cancelAnimationFrame(_cropRafId); _cropRafId=null; }
-      if(mtCropDisplayRect && mtCropDisplayRect.w>4 && mtCropDisplayRect.h>4){
-        // Convert canvas-pixel coords → original image coords
-        mtState.cropRect={
-          x: Math.round(mtCropDisplayRect.x / mtDisplayScale),
-          y: Math.round(mtCropDisplayRect.y / mtDisplayScale),
-          w: Math.round(mtCropDisplayRect.w / mtDisplayScale),
-          h: Math.round(mtCropDisplayRect.h / mtDisplayScale),
-        };
-        mtState.hasCrop=true;
-        document.getElementById('mtApplyCropBtn').classList.add('active-state');
-      }
-    };
+    cv.onmouseup = e => { commitMtCropDrag(); };
 
-    cv.onmouseleave = e => {
-      if(mtCropDragging) { mtCropDragging=false; if (_cropRafId) { cancelAnimationFrame(_cropRafId); _cropRafId=null; } }
-    };
+    // FIX (fast-cursor-out-of-canvas bug): previously this listener SET
+    // mtCropDragging=false the instant the cursor left the canvas, which threw
+    // away the in-progress selection without ever committing it to mtState.
+    // That is why a fast drag past the edge left the crop box "stuck" and Apply
+    // Crop appeared to do nothing (mtState.cropRect/hasCrop was never updated).
+    // We now leave dragging ON when the cursor exits: onmousemove already clamps
+    // the rect to the canvas bounds (clampCanvasPos/clampCropRect), so the box
+    // simply freezes at the edge and keeps working the moment the cursor comes
+    // back over the canvas. The drag is still safely finalised even if the mouse
+    // button is released outside the canvas, via the document-level mouseup
+    // fallback (commitMtCropDrag) registered once below.
+    cv.onmouseleave = e => {};
 
     // Touch support — same getBoundingClientRect approach
     cv.ontouchstart = e => {
@@ -2260,6 +2254,32 @@ window.sdt = (() => {
     };
   }
 
+  // Shared finalize-drag logic used by both the canvas mouseup handler above and
+  // the document-level fallback below (so a release outside the canvas still
+  // commits the crop instead of leaving it "stuck").
+  function commitMtCropDrag(){
+    if(!mtCropDragging) return;
+    mtCropDragging=false;
+    if (_cropRafId) { cancelAnimationFrame(_cropRafId); _cropRafId=null; }
+    if(mtCropDisplayRect && mtCropDisplayRect.w>4 && mtCropDisplayRect.h>4){
+      // Convert canvas-pixel coords → original image coords
+      mtState.cropRect={
+        x: Math.round(mtCropDisplayRect.x / mtDisplayScale),
+        y: Math.round(mtCropDisplayRect.y / mtDisplayScale),
+        w: Math.round(mtCropDisplayRect.w / mtDisplayScale),
+        h: Math.round(mtCropDisplayRect.h / mtDisplayScale),
+      };
+      mtState.hasCrop=true;
+      const btn=document.getElementById('mtApplyCropBtn');
+      if(btn) btn.classList.add('active-state');
+    }
+  }
+  // FIX: registered ONCE at module load (not inside bindMtCropEvents, which runs
+  // many times) so a fast drag that ends with the mouse button released outside
+  // the crop canvas still finishes the crop cleanly, instead of leaving the
+  // selection box stuck on screen with nothing applied to mtState.
+  document.addEventListener('mouseup', commitMtCropDrag);
+
   function mtSyncRotationControl(){
     const input=document.getElementById('mtRotateFine');
     const label=document.getElementById('mtRotateFineLabel');
@@ -2271,6 +2291,13 @@ window.sdt = (() => {
   function mtSetRotation(deg){mtState.rotateDeg=Number(deg)||0;mtCropDisplayRect=null;mtState.cropRect=null;mtState.hasCrop=false;_cachedRotatedCanvas=null;mtSyncRotationControl();renderMultiTool();setTimeout(bindMtCropEvents,50);}
   function mtFlip(dir){if(dir==='h')mtState.flipH=!mtState.flipH;else mtState.flipV=!mtState.flipV;_cachedRotatedCanvas=null;renderMultiTool();setTimeout(bindMtCropEvents,50);}
   function mtApplyCrop(){
+    // FIX (weird overlay on crop-after-crop): clear the leftover selection box
+    // BEFORE re-rendering. Previously the old dashed rectangle from the last
+    // drag stayed in mtCropDisplayRect and got redrawn on top of the freshly
+    // applied crop every time, which is what made repeated cropping look messy.
+    // Clearing it here gives a clean image with no stray box; a new one only
+    // appears once the user starts a fresh drag.
+    mtCropDisplayRect = null;
     try {
       renderMultiTool();
       toast(Lang.t('toastCropApplied'));
@@ -4498,7 +4525,17 @@ const mp = (() => {
     setTimeout(() => bindCropEvents(pi), 30);
   }
 
-  function applyCrop(pi) { renderPersonCanvas(pi); }
+  function applyCrop(pi) {
+    // FIX (weird overlay on crop-after-crop): the old dashed selection box was
+    // left in cropDisplayRect after applying, using coordinates/scale from the
+    // PREVIOUS (larger) canvas size. Since applying a crop shrinks the canvas,
+    // that stale box got redrawn in the wrong place on top of the newly cropped
+    // photo on the next render. Clearing it first gives a clean cropped photo;
+    // a new box only appears once the user starts another drag.
+    const p = persons[pi];
+    if (p) p.cropDisplayRect = null;
+    renderPersonCanvas(pi);
+  }
 
   function clearCrop(pi) {
     persons[pi].state.cropRect = null;
@@ -4717,8 +4754,12 @@ const mp = (() => {
       };
       redrawCropDragOverlay(pi);
     };
-    cv.onmouseup = e => {
-      if (!p.dragging) return; p.dragging = false;
+    // Shared finalize-drag logic, used by the canvas mouseup handler AND the
+    // document-level fallback below, so a release outside the canvas still
+    // commits the crop instead of leaving it stuck.
+    function commitCropDrag(){
+      if (!p.dragging) return;
+      p.dragging = false;
       if (p.cropDisplayRect && p.cropDisplayRect.w > 4 && p.cropDisplayRect.h > 4) {
         p.state.cropRect = {
           x: Math.round(p.cropDisplayRect.x / p.displayScale),
@@ -4728,8 +4769,24 @@ const mp = (() => {
         };
         p.state.hasCrop = true;
       }
-    };
-    cv.onmouseleave = () => { p.dragging = false; };
+    }
+    cv.onmouseup = e => { commitCropDrag(); };
+
+    // FIX (fast-cursor-out-of-canvas bug): this used to abort the drag the
+    // instant the cursor left the canvas, discarding the in-progress selection
+    // before it was ever committed to p.state — that's why a fast drag past the
+    // edge left the crop box "stuck" and Apply Crop did nothing. Now dragging
+    // stays on: onmousemove already clamps to the canvas bounds, so the box
+    // simply freezes at the edge and resumes the moment the cursor comes back.
+    cv.onmouseleave = () => {};
+
+    // FIX: registered once per person-canvas (old listener removed first so
+    // repeated bindCropEvents() calls, which happen on every state change,
+    // don't stack up multiple listeners). Safety net so releasing the mouse
+    // button outside the canvas still finalizes the crop cleanly.
+    if (p._docMouseUp) document.removeEventListener('mouseup', p._docMouseUp);
+    p._docMouseUp = commitCropDrag;
+    document.addEventListener('mouseup', p._docMouseUp);
 
     cv.ontouchstart = e => {
       e.preventDefault();
