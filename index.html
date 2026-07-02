@@ -925,7 +925,7 @@
         <div class="step rv rv3">
           <div class="step-num sn--3">3</div>
           <div class="step-title" id="lp-step3-title">Edit &amp; Arrange</div>
-          <div class="step-desc" id="lp-step3-desc">Crop, rotate, remove background, place signatures, compress, reorder pages — full editing without leaving the page.</div>
+          <div class="step-desc" id="lp-step3-desc">Crop, rotate, remove background, place signatures, compress, reorder pages — full editing without leaving the page. (Background removal is on-device by default; an optional remove.bg API mode sends the photo externally only if you choose it.)</div>
         </div>
         <div class="step rv rv4">
           <div class="step-num sn--4">4</div>
@@ -941,28 +941,35 @@
         <div>
           <div class="sec-eye rv" id="lp-sec-eye-priv">Privacy First</div>
           <h2 class="sec-h2 rv rv1" id="lp-sec-h2-priv">Your documents never leave your device.</h2>
-          <p class="sec-sub rv rv2" style="margin-bottom:0">DocStitcher processes everything inside your browser using JavaScript and Canvas APIs. No file — not your Aadhaar, PAN card, passport photo, or anything else — is ever sent to any server. The only network traffic is ads (which keep the app free) and the AI model download on first use.</p>
+          <p class="sec-sub rv rv2" style="margin-bottom:0">DocStitcher processes everything inside your browser using JavaScript and Canvas APIs. No file — not your Aadhaar, PAN card, passport photo, or anything else — is ever sent to any server, <strong>with one optional exception explained below</strong>. The only automatic network traffic is ads (which keep the app free) and the AI model download on first use.</p>
 
           <div class="priv-points">
             <div class="priv-point rv rv2">
               <div class="priv-icon pi--lock">🔒</div>
               <div class="priv-text">
-                <strong>Zero Server File Uploads</strong>
+                <strong>Zero Server File Uploads by Default</strong>
                 <span>All file processing happens using JavaScript and Canvas APIs, entirely in your tab. No backend, no cloud storage, no S3 bucket ever touches your files.</span>
               </div>
             </div>
             <div class="priv-point rv rv3">
               <div class="priv-icon pi--ai">🤖</div>
               <div class="priv-text">
-                <strong>On-Device AI Model</strong>
-                <span>The background removal AI downloads once and runs locally in your browser. Your photos are never sent to any AI service or cloud API.</span>
+                <strong>On-Device AI Model (default)</strong>
+                <span>The built-in background removal AI downloads once and runs locally in your browser. When you use this default "Local AI" option, your photos are never sent to any AI service or cloud API.</span>
+              </div>
+            </div>
+            <div class="priv-point rv rv3">
+              <div class="priv-icon pi--net">☁️</div>
+              <div class="priv-text">
+                <strong>Optional: remove.bg API (external, opt-in only)</strong>
+                <span>Background removal also offers an optional, higher-accuracy mode powered by the third-party remove.bg service. This mode is off by default — it only activates if you manually enter your own remove.bg API key and choose it. If you do, that specific photo is uploaded to remove.bg's servers to be processed. The app also asks you to confirm this before the very first upload. See our <a href="privacy.html#third-party">Privacy Policy</a> for details.</span>
               </div>
             </div>
             <div class="priv-point rv rv4">
               <div class="priv-icon pi--net">📢</div>
               <div class="priv-text">
                 <strong>Why Internet Is Required</strong>
-                <span>The app itself and its ads require a live connection to load — this is how we keep DocStitcher free. Once loaded, all your document work stays 100% local and private.</span>
+                <span>The app itself and its ads require a live connection to load — this is how we keep DocStitcher free. Once loaded, all your document work stays 100% local and private, unless you knowingly opt into the remove.bg API above.</span>
               </div>
             </div>
           </div>
@@ -1026,7 +1033,7 @@
           </div>
           <span class="logo-name" style="font-size:15px">DocStitcher</span>
         </div>
-        <p class="foot-copy">© 2026 DocStitcher &nbsp;·&nbsp; Built with ❤️ in India &nbsp;·&nbsp; Files processed 100% locally</p>
+        <p class="foot-copy">© 2026 DocStitcher &nbsp;·&nbsp; Built with ❤️ in India &nbsp;·&nbsp; Files processed 100% locally by default (see optional remove.bg note above)</p>
         <div class="foot-links">
           <a href="#features" class="foot-link">Features</a>
           <a href="privacy.html" class="foot-link">Privacy</a>
