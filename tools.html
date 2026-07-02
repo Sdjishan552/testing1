@@ -758,6 +758,13 @@
               </div>
               <div id="mpSingleImgInfo" style="font-size:10.5px;color:var(--text-muted);text-align:center;margin-top:5px;min-height:14px"></div>
               <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
+                <label class="ctrl-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+                  <span>📉 Quality (for JPG download)</span> <span id="mpSingleQualLabel">85%</span>
+                </label>
+                <div class="slider-wrap">
+                  <input type="range" id="mpSingleQual" min="1" max="100" value="85" oninput="mp.mpSetSingleQuality(this.value)" style="--pct:84.8%">
+                </div>
+                <div class="mt-qual-size-est" id="mpSingleQualSizeEst" style="margin-bottom:8px">≈ estimated size: -</div>
                 <div style="font-size:10.5px;font-weight:600;color:var(--text-muted);margin-bottom:5px">⬇ Save this photo:</div>
                 <div style="display:flex;gap:6px">
                   <button class="btn-secondary" onclick="mp.downloadSingleImageFromSelector('jpeg')" style="flex:1;justify-content:center;font-size:11px">JPG</button>
