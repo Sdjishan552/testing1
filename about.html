@@ -3,255 +3,316 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#fffaf5" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="DocStitcher" />
+  <meta name="theme-color" content="#0c111d" />
+  <meta name="description" content="About DocStitcher — a free, honest, browser-based tool for stitching documents, making ID photos, and editing images. No sign-up, no server uploads, no hidden catch." />
+  <title>About Us — DocStitcher</title>
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <title>DocStitcher — Document Stitcher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <link rel="stylesheet" href="assets/style.css?v=9.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    #langPickerBtn {
-      font-size: 12px; font-weight: 600; padding: 5px 13px;
-      border-radius: 20px; border: 1.5px solid var(--accent,#f96b3f);
-      background: transparent; color: var(--accent,#f96b3f);
-      cursor: pointer; letter-spacing: 0.3px;
-      transition: background 0.18s, color 0.18s; white-space: nowrap;
+    :root {
+      --lp-bg:#0c111d;--lp-surface:#131929;--lp-card:#1a2236;
+      --lp-border:rgba(255,255,255,0.08);--lp-amber:#f9a825;--lp-coral:#f96b3f;
+      --lp-teal:#22d3c5;--lp-purple:#8b5cf6;--lp-green:#22c55e;
+      --lp-text:#f0f4ff;--lp-muted:#8492a6;--lp-faint:#4a5568;
+      --ff-disp:"Space Grotesk",sans-serif;--ff-body:"Plus Jakarta Sans",sans-serif;
     }
-    #langPickerBtn:hover { background: var(--accent,#f96b3f); color: #fff; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--lp-bg);color:var(--lp-text);font-family:var(--ff-body);font-size:15px;line-height:1.75;min-height:100vh}
+    a{color:var(--lp-amber);text-decoration:none}
+    a:hover{text-decoration:underline}
+    @keyframes lp-glow{0%,100%{opacity:0.4}50%{opacity:0.7}}
+    .lp-aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    .lp-aurora-blob{position:absolute;border-radius:50%;filter:blur(80px);animation:lp-glow 6s ease-in-out infinite}
+    .lp-aurora-blob:nth-child(1){width:600px;height:600px;top:-200px;left:-150px;background:radial-gradient(circle,rgba(34,211,197,0.09),transparent 70%)}
+    .lp-aurora-blob:nth-child(2){width:500px;height:500px;top:10%;right:-150px;background:radial-gradient(circle,rgba(249,168,37,0.07),transparent 70%);animation-delay:2s}
+    .lp-aurora-blob:nth-child(3){width:700px;height:700px;bottom:-200px;left:30%;background:radial-gradient(circle,rgba(139,92,246,0.07),transparent 70%);animation-delay:4s}
+    .lp-noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px}
+    .lp-nav{position:sticky;top:0;z-index:100;background:rgba(12,17,29,0.75);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--lp-border)}
+    .lp-nav-inner{max-width:1120px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .lp-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .lp-logo-mark{width:36px;height:36px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#f96b3f,#f9a825);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(249,107,63,0.4)}
+    .lp-logo-text{font-family:var(--ff-disp);font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.02em}
+    .lp-nav-cta{font-family:var(--ff-disp);font-size:13.5px;font-weight:700;color:#0c111d;background:linear-gradient(135deg,#f9a825,#f96b3f);padding:9px 20px;border-radius:10px;border:none;cursor:pointer;transition:transform .18s,box-shadow .18s;box-shadow:0 4px 14px rgba(249,107,63,0.35);white-space:nowrap}
+    .lp-nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(249,107,63,0.5)}
+    .page-wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:64px 28px 96px}
 
-    /* ── Compact 2-column card layout ── */
-    #documentsList.documents-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      align-items: start;
-    }
-    .document-card {
-      font-size: 12px;
-    }
-    .document-card .document-card-head {
-      margin-bottom: 8px;
-    }
-    .document-card .document-kicker {
-      font-size: 10px;
-    }
-    .document-card .doc-name-input {
-      font-size: 13px;
-    }
-    .document-card .document-settings {
-      gap: 8px;
-    }
-    .document-card .ctrl-label {
-      font-size: 11px;
-    }
-    .document-card .ctrl-select {
-      font-size: 11px;
-      padding: 4px 8px;
-    }
-    .document-card .doc-layout-preview {
-      margin: 6px 0;
-    }
-    .document-card .paper-mini {
-      height: 70px !important;
-    }
-    .document-card .paper-mini.landscape {
-      height: 50px !important;
-    }
-    .document-card .drop-zone.compact-drop {
-      min-height: 80px;
-      height: 80px;
-    }
-    .document-card .drop-icon {
-      font-size: 11px;
-    }
-    .document-card .drop-label {
-      font-size: 10px;
-    }
-    .document-card .drop-hint {
-      font-size: 9px;
-    }
-    .document-card .slot-heading {
-      font-size: 10px;
-      margin-bottom: 3px;
-    }
-    .document-card .slot-info {
-      font-size: 10px;
-    }
-    .document-card .document-actions {
-      gap: 6px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-    .document-card .btn-primary,
-    .document-card .btn-secondary,
-    .document-card .btn-ghost {
-      font-size: 11px;
-      padding: 6px 11px;
-    }
-    .document-card .estimate-pill {
-      font-size: 10px;
-      padding: 4px 10px;
-    }
-    .document-card .target-size-wrap {
-      margin-top: 4px;
-    }
-    .document-card .target-size-input {
-      font-size: 11px;
-      width: 70px;
-      padding: 4px 6px;
-    }
-    .document-card .target-size-btn {
-      font-size: 11px;
-      padding: 4px 9px;
-    }
-    .document-card .signature-toggle {
-      font-size: 11px;
-    }
-    @media (max-width: 700px) {
-      #documentsList.documents-list {
-        grid-template-columns: 1fr;
-      }
+    /* Hero */
+    .doc-hero{text-align:center;margin-bottom:56px}
+    .doc-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(34,211,197,0.1);border:1px solid rgba(34,211,197,0.25);border-radius:99px;padding:6px 16px;margin-bottom:24px;font-family:var(--ff-disp);font-size:12px;font-weight:700;color:var(--lp-teal);letter-spacing:0.06em;text-transform:uppercase}
+    .doc-h1{font-family:var(--ff-disp);font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-0.03em;color:#fff;line-height:1.1;margin-bottom:16px}
+    .doc-hero-sub{font-size:15.5px;color:var(--lp-muted);max-width:600px;margin:0 auto}
+
+    /* Story / prose sections */
+    .about-section{margin-bottom:48px}
+    .about-section-eyebrow{font-family:var(--ff-disp);font-size:12px;font-weight:700;color:var(--lp-teal);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px}
+    .about-section-title{font-family:var(--ff-disp);font-size:24px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-0.01em}
+    .about-section-body{font-size:14.5px;color:var(--lp-muted);line-height:1.85}
+    .about-section-body p{margin-bottom:14px}
+    .about-section-body p:last-child{margin-bottom:0}
+    .about-section-body strong{color:var(--lp-text)}
+
+    /* Value / honesty cards */
+    .value-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:24px}
+    .value-card{background:var(--lp-card);border:1px solid var(--lp-border);border-radius:18px;padding:26px 24px;transition:transform .25s cubic-bezier(.22,.68,0,1.2),border-color .2s}
+    .value-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.15)}
+    .value-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px;background:rgba(34,211,197,0.12);border:1px solid rgba(34,211,197,0.2)}
+    .value-title{font-family:var(--ff-disp);font-size:14.5px;font-weight:800;color:#fff;margin-bottom:8px}
+    .value-desc{font-size:13px;color:var(--lp-muted);line-height:1.7}
+
+    /* Feature list */
+    .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px}
+    .feature-item{display:flex;gap:12px;align-items:flex-start;background:var(--lp-surface);border:1px solid var(--lp-border);border-radius:14px;padding:16px 18px}
+    .feature-emoji{font-size:18px;flex-shrink:0;line-height:1.4}
+    .feature-text-title{font-family:var(--ff-disp);font-size:13.5px;font-weight:700;color:#fff;margin-bottom:3px}
+    .feature-text-desc{font-size:12.5px;color:var(--lp-muted);line-height:1.6}
+
+    /* Honest numbers strip */
+    .honest-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+    .honest-stat{text-align:center;background:var(--lp-card);border:1px solid var(--lp-border);border-radius:16px;padding:22px 12px}
+    .honest-stat-num{font-family:var(--ff-disp);font-size:26px;font-weight:800;color:var(--lp-teal);margin-bottom:4px}
+    .honest-stat-label{font-size:12px;color:var(--lp-muted)}
+
+    /* Callout box */
+    .callout{background:linear-gradient(135deg,rgba(34,211,197,0.06),rgba(139,92,246,0.05));border:1px solid rgba(34,211,197,0.2);border-radius:18px;padding:26px 28px;margin-top:20px}
+    .callout p{font-size:13.5px;color:var(--lp-muted);line-height:1.8;margin:0}
+    .callout p strong{color:var(--lp-text)}
+    .callout a{font-weight:700}
+
+    /* CTA */
+    .about-cta{text-align:center;background:var(--lp-card);border:1px solid var(--lp-border);border-radius:20px;padding:48px 32px;margin-top:8px}
+    .about-cta-title{font-family:var(--ff-disp);font-size:22px;font-weight:800;color:#fff;margin-bottom:10px}
+    .about-cta-sub{font-size:13.5px;color:var(--lp-muted);margin-bottom:24px}
+    .btn-primary{display:inline-flex;align-items:center;gap:10px;font-family:var(--ff-disp);font-size:15px;font-weight:800;padding:15px 30px;border-radius:14px;background:linear-gradient(135deg,#f9a825,#f96b3f);color:#0c111d;border:none;cursor:pointer;box-shadow:0 8px 28px rgba(249,107,63,0.3);transition:transform .22s cubic-bezier(.22,.68,0,1.2),box-shadow .22s}
+    .btn-primary:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 36px rgba(249,107,63,0.45);text-decoration:none}
+
+    .lp-footer{position:relative;z-index:1;border-top:1px solid var(--lp-border);padding:40px 28px}
+    .lp-footer-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+    .lp-footer-copy{font-size:12.5px;color:var(--lp-faint)}
+    .lp-footer-links{display:flex;align-items:center;gap:6px}
+    .lp-footer-link{font-size:12.5px;color:var(--lp-faint);padding:4px 10px;border-radius:6px;transition:color .18s}
+    .lp-footer-link:hover{color:var(--lp-muted)}
+
+    @media(max-width:600px){
+      .page-wrap{padding:40px 16px 72px}
+      .value-grid,.feature-grid{grid-template-columns:1fr}
+      .honest-strip{grid-template-columns:1fr}
+      .about-cta{padding:36px 22px}
+      .lp-footer-inner{flex-direction:column;text-align:center}
     }
   </style>
 </head>
 <body>
-  <div class="noise-bg"></div>
 
-  <!-- MAIN APP -->
-  <div id="app-main">
-    <div class="page-wrap app-shell">
+  <div class="lp-aurora">
+    <div class="lp-aurora-blob"></div>
+    <div class="lp-aurora-blob"></div>
+    <div class="lp-aurora-blob"></div>
+  </div>
+  <div class="lp-noise"></div>
 
-      <header class="header fade-up">
-        <div class="header-brand">
-          <div class="brand-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
-            </svg>
-          </div>
+  <nav class="lp-nav">
+    <div class="lp-nav-inner">
+      <a href="index.html" class="lp-logo">
+        <div class="lp-logo-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+          </svg>
+        </div>
+        <span class="lp-logo-text">DocStitcher</span>
+      </a>
+      <button class="lp-nav-cta" onclick="window.location.href='app.html'">Open App</button>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- HERO -->
+    <div class="doc-hero">
+      <div class="doc-eyebrow">👋 About Us</div>
+      <h1 class="doc-h1">A free tool built to save you a trip to the photo shop.</h1>
+      <p class="doc-hero-sub">DocStitcher exists to make ordinary paperwork — ID scans, passport photos, signed forms — quick to prepare from your phone, without paying anyone or handing your documents to a stranger's server.</p>
+    </div>
+
+    <!-- WHY WE BUILT IT -->
+    <div class="about-section">
+      <div class="about-section-eyebrow">Why we built this</div>
+      <div class="about-section-title">The paperwork problem</div>
+      <div class="about-section-body">
+        <p>Most of us have stood in line at a local photo studio or cyber café just to get an Aadhaar card scanned front-and-back onto one A4 page, or to have a passport-size photo resized to the exact specs a government portal demands. It's a small task that somehow always costs money and takes longer than it should.</p>
+        <p>DocStitcher started as a way to do that ourselves, in the browser, for free. It grew from "stitch two photos into an A4 PDF" into a small toolbox: passport/ID photo sizing, background removal, signature placement, cropping and compressing files down to a target size, watermarking, and bulk PDF building — the handful of things people actually need before uploading a document somewhere.</p>
+        <p>We're honest that this isn't a big company with a research lab. It's a small, ad-supported project. What we can promise is that we built it to solve a real annoyance, and we kept it free because that annoyance shouldn't cost money to fix.</p>
+      </div>
+    </div>
+
+    <!-- WHAT'S ACTUALLY FREE -->
+    <div class="about-section">
+      <div class="about-section-eyebrow">Honest words, not marketing words</div>
+      <div class="about-section-title">What "free" actually means here</div>
+      <div class="about-section-body">
+        <p>There is no premium tier, no paywalled feature, no "free trial," and no account to create. Every tool on this site — the document stitcher, the passport photo maker, the background remover, the compressor, the watermark tool, the bulk PDF builder — works the same for everyone, with no usage limit we impose.</p>
+        <p>The only thing that keeps the lights on is advertising. We don't sell your data, because we never receive it in the first place — everything runs inside your browser using JavaScript and Canvas APIs, not on a server we operate. The single, clearly optional exception is described below, because we'd rather over-explain it than have you find out by surprise.</p>
+      </div>
+
+      <div class="value-grid">
+        <div class="value-card">
+          <div class="value-icon">🆓</div>
+          <div class="value-title">No paywall, ever</div>
+          <div class="value-desc">Every tool is fully usable for free. Nothing is held back behind a "Pro" upgrade.</div>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🔒</div>
+          <div class="value-title">Your files stay yours</div>
+          <div class="value-desc">Documents are processed on your device by default. We have no backend that stores or reads them.</div>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🚫</div>
+          <div class="value-title">No sign-up, no tracking accounts</div>
+          <div class="value-desc">No email, password, or account is required to use any tool on this site.</div>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">📣</div>
+          <div class="value-title">Ads pay for it — nothing else</div>
+          <div class="value-desc">Google AdSense is our only revenue source. That's the honest trade-off for a free tool.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT'S INSIDE -->
+    <div class="about-section">
+      <div class="about-section-eyebrow">What's inside</div>
+      <div class="about-section-title">The actual toolbox</div>
+      <div class="about-section-body">
+        <p>Here's what DocStitcher can do today, in plain terms:</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-emoji">📎</div>
           <div>
-            <h1 class="brand-name" data-i18n="brandName">Document Stitcher 7.0</h1>
-            <p class="brand-tagline" data-i18n="brandTagline">A4 PDF maker · PDF/JPG/PNG output · No uploads · 100% local</p>
+            <div class="feature-text-title">Document Stitcher</div>
+            <div class="feature-text-desc">Combine one-sided or two-sided scans (front/back) into a single A4 PDF, JPG, or PNG.</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button id="langPickerBtn" onclick="Lang.openPicker()" title="Choose Language">EN</button>
-          <button class="btn-ghost" id="helpBtn" onclick="toggleHelp()" data-i18n="helpBtn">Help</button>
+        <div class="feature-item">
+          <div class="feature-emoji">🪪</div>
+          <div>
+            <div class="feature-text-title">Passport / ID Photo Maker</div>
+            <div class="feature-text-desc">Crop and size photos to exact passport, visa, or ID specifications.</div>
+          </div>
         </div>
-      </header>
-
-      <div class="glow-line fade-up fade-up-1"></div>
-
-      <div id="helpPanel" class="help-panel" style="display:none">
-        <h3 data-i18n="helpTitle">How to use</h3>
-        <ol>
-          <li data-i18n="helpStep1">Add a two-sided or one-sided document card using the buttons below.</li>
-          <li data-i18n="helpStep2">Upload front (and back for two-sided). PDFs are auto-converted to images.</li>
-          <li data-i18n="helpStep3">Enable the signature checkbox to add a signature image. Use the <strong>🎯 Place Signature</strong> button to position it precisely using arrow keys (hold Shift for bigger steps).</li>
-          <li data-i18n="helpStep4">Click Download and choose PDF, JPG, or PNG output format.</li>
-          <li data-i18n="helpStep5">Use Single-Doc Tools (bottom right) to crop, rotate, flip, compress and convert any image or PDF all at once before sending it here.</li>
-        </ol>
+        <div class="feature-item">
+          <div class="feature-emoji">🤖</div>
+          <div>
+            <div class="feature-text-title">Background Remover</div>
+            <div class="feature-text-desc">On-device AI by default; an optional remove.bg API mode is available for tougher photos.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-emoji">🎯</div>
+          <div>
+            <div class="feature-text-title">Signature Placement</div>
+            <div class="feature-text-desc">Add a signature image and nudge it into position precisely with arrow keys.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-emoji">🛠️</div>
+          <div>
+            <div class="feature-text-title">Single-Doc Tools</div>
+            <div class="feature-text-desc">Crop, rotate, flip, compress to a target file size, and convert formats.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-emoji">💧</div>
+          <div>
+            <div class="feature-text-title">Watermarking</div>
+            <div class="feature-text-desc">Stamp a watermark image or text across a document before sharing it.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-emoji">📚</div>
+          <div>
+            <div class="feature-text-title">Bulk PDF Builder</div>
+            <div class="feature-text-desc">Merge and compress multiple pages into one print-ready PDF.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-emoji">📲</div>
+          <div>
+            <div class="feature-text-title">Installable PWA</div>
+            <div class="feature-text-desc">Add DocStitcher to your home screen and open it like a native app.</div>
+          </div>
+        </div>
       </div>
-
-      <section class="batch-toolbar fade-up fade-up-2">
-        <div>
-          <div class="section-label" data-i18n="sectionDocuments">Documents</div>
-          <p class="toolbar-sub"><span id="readyCount">0 ready</span> · A4 · PDF / JPG / PNG output</p>
-        </div>
-        <div class="toolbar-actions">
-          <button class="btn-secondary" onclick="addDocument(false)" data-i18n="btnTwoSided">+ Two-Sided</button>
-          <button class="btn-secondary" onclick="addDocument(true)" data-i18n="btnOneSided">+ One-Sided</button>
-          <button class="btn-primary" id="downloadAllBtn" onclick="downloadAllDocuments()" disabled data-i18n="btnDownloadAll">Download All</button>
-        </div>
-      </section>
-
-      <div id="documentsList" class="documents-list fade-up fade-up-3"></div>
-
     </div>
-  </div>
 
-  <!-- Floating SDT button — navigates to tools.html -->
-  <button id="sdt-fab" onclick="window.location.href='tools.html'" title="Single-Doc Tools">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-    <span class="fab-label" data-i18n="sdtBadge">Single-Doc Tools</span>
-  </button>
-
-  <!-- Lightbox -->
-  <div id="lightbox" role="dialog" aria-modal="true" style="display:none" onclick="closeLightbox(event)">
-    <button class="lightbox-close" onclick="closeLightbox()">×</button>
-    <img id="lightboxImg" alt="Full view">
-  </div>
-
-  <!-- Slot picker -->
-  <div id="slotPicker" style="display:none" onclick="closeSlotPicker(event)">
-    <div class="slot-picker-box">
-      <div class="slot-picker-title" data-i18n="slotPickerTitle">Send to document card</div>
-      <div id="slotPickerBody"></div>
-    </div>
-  </div>
-
-  <!-- Download format picker modal -->
-  <div id="dlPickerModal" style="display:none;position:fixed;inset:0;z-index:200000;background:rgba(30,44,64,0.55);align-items:center;justify-content:center;backdrop-filter:blur(3px)">
-    <div class="dl-picker-box">
-      <div class="dl-picker-title" id="dlPickerTitle" data-i18n="dlPickerTitle">Choose download format</div>
-      <div class="dl-picker-grid">
-        <button class="dl-fmt-btn dl-pdf" onclick="pickDownloadFormat('pdf')">
-          <span class="dl-fmt-icon">📄</span>
-          <span class="dl-fmt-label">PDF</span>
-          <span class="dl-fmt-sub" data-i18n="dlFmtPdfSub">A4 print-ready</span>
-        </button>
-        <button class="dl-fmt-btn dl-jpg" onclick="pickDownloadFormat('jpg')">
-          <span class="dl-fmt-icon">🖼</span>
-          <span class="dl-fmt-label">JPG</span>
-          <span class="dl-fmt-sub" data-i18n="dlFmtJpgSub">Smaller file size</span>
-        </button>
-        <button class="dl-fmt-btn dl-png" onclick="pickDownloadFormat('png')">
-          <span class="dl-fmt-icon">🖼</span>
-          <span class="dl-fmt-label">PNG</span>
-          <span class="dl-fmt-sub" data-i18n="dlFmtPngSub">Lossless quality</span>
-        </button>
+    <!-- PRIVACY, HONESTLY -->
+    <div class="about-section">
+      <div class="about-section-eyebrow">The fine print, said plainly</div>
+      <div class="about-section-title">Privacy, honestly</div>
+      <div class="about-section-body">
+        <p>By default, everything you upload — Aadhaar, PAN, passport photos, signatures, whatever — is processed entirely inside your browser and never touches a server we run. The only network calls DocStitcher makes automatically are to load the page itself and to display the ads that keep it free.</p>
+        <p><strong>The one deliberate exception:</strong> the background remover offers an optional, higher-accuracy mode powered by the third-party service remove.bg. It is off unless you manually turn it on and enter your own remove.bg API key. If you do, that specific photo is uploaded to remove.bg's servers for processing — nothing else is sent, and it never happens automatically. The app also asks you to confirm this the first time, before anything is uploaded.</p>
       </div>
-      <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="cancelDownloadPicker()" data-i18n="btnCancel">Cancel</button>
+      <div class="callout">
+        <p>We'd rather tell you this twice than have you assume the app is 100% local when one optional feature isn't. Full details live in our <strong><a href="privacy.html">Privacy Policy</a></strong>, and the rules everyone agrees to by using the site are in our <strong><a href="terms.html">Terms of Service</a></strong>.</p>
+      </div>
     </div>
-  </div>
 
-  <!-- Signature placer modal -->
-  <div id="sigPlacerModal" tabindex="0" style="display:none;position:fixed;inset:0;z-index:200001;background:rgba(18,26,40,0.88);flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(4px);padding:20px">
-    <div class="sig-placer-header">
-      <div class="sig-placer-title" data-i18n="sigPlacerTitle">🎯 Place Signature with Arrow Keys</div>
-      <div class="sig-placer-hint" data-i18n="sigPlacerHint">← → ↑ ↓ to move · Shift + arrows = bigger steps · Enter to confirm · Esc to cancel</div>
+    <!-- HONEST NUMBERS -->
+    <div class="about-section">
+      <div class="about-section-eyebrow">In short</div>
+      <div class="about-section-title">The honest summary</div>
+      <div class="honest-strip">
+        <div class="honest-stat">
+          <div class="honest-stat-num">₹0</div>
+          <div class="honest-stat-label">Cost to use any tool</div>
+        </div>
+        <div class="honest-stat">
+          <div class="honest-stat-num">0</div>
+          <div class="honest-stat-label">Sign-ups or accounts needed</div>
+        </div>
+        <div class="honest-stat">
+          <div class="honest-stat-num">1</div>
+          <div class="honest-stat-label">Optional, opt-in exception (remove.bg)</div>
+        </div>
+      </div>
     </div>
-    <canvas id="sigPlacerCanvas" style="border-radius:10px;box-shadow:0 24px 56px rgba(0,0,0,0.5);max-width:100%;max-height:60vh;object-fit:contain"></canvas>
-    <div class="sig-placer-info">
-      <span data-i18n="sigPlacerPos">Position:</span>
-      <strong id="sigPlacerPos">X: 0.0mm  Y: 0.0mm</strong>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-      <button class="btn-primary" onclick="confirmSigPlacement()" data-i18n="btnConfirmPlacement">✓ Confirm Placement</button>
-      <button class="btn-secondary" onclick="closeSigPlacer()" data-i18n="btnCancel">Cancel</button>
-    </div>
-    <div class="arrow-joystick">
-      <div style="grid-column:2"><button class="joy-btn" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp'}))">▲</button></div>
-      <div style="grid-column:1"><button class="joy-btn" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft'}))">◄</button></div>
-      <div style="grid-column:2"><button class="joy-btn" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown'}))">▼</button></div>
-      <div style="grid-column:3;grid-row:2"><button class="joy-btn" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}))">►</button></div>
-    </div>
-  </div>
 
-  <!-- Toast -->
-  <div class="toast-wrap" id="toastWrap"></div>
+    <!-- CTA -->
+    <div class="about-cta">
+      <div class="about-cta-title">That's it — no catch.</div>
+      <div class="about-cta-sub">Open the app and try it. If something's confusing or broken, tell us — we read every message.</div>
+      <button class="btn-primary" onclick="window.location.href='app.html'">Open App — It's Free</button>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <a href="index.html" class="lp-logo" style="text-decoration:none">
+        <div class="lp-logo-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="3" width="9" height="13" rx="2"/><path d="M2 20h20"/>
+          </svg>
+        </div>
+        <span class="lp-logo-text" style="font-size:15px">DocStitcher</span>
+      </a>
+      <p class="lp-footer-copy">© 2026 DocStitcher &nbsp;·&nbsp; Built with ❤️ in India</p>
+      <div class="lp-footer-links">
+        <a href="index.html" class="lp-footer-link">Home</a>
+        <a href="privacy.html" class="lp-footer-link">Privacy</a>
+        <a href="terms.html" class="lp-footer-link">Terms</a>
+        <a href="about.html" class="lp-footer-link">About</a>
+        <a href="contact.html" class="lp-footer-link">Contact</a>
+      </div>
+    </div>
+  </footer>
 
   <script src="assets/i18n.js"></script>
   <script src="assets/app.js?v=9.0"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      if (typeof updateAllRemoveBgCounters === 'function') updateAllRemoveBgCounters();
-      if (typeof updateAllApiKeyStatus === 'function') updateAllApiKeyStatus();
-    });
-  </script>
 </body>
 </html>
