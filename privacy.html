@@ -147,7 +147,7 @@
       <div class="doc-callout-icon">🛡️</div>
       <div class="doc-callout-text">
         <strong>The short version</strong>
-        DocStitcher processes everything — cropping, PDF creation, background removal, compression — entirely inside your browser using JavaScript. No file you upload is ever sent to any server, anywhere. We do not store, read, or transmit your documents.
+        DocStitcher processes everything — cropping, PDF creation, background removal, compression — entirely inside your browser using JavaScript. No file you upload is ever sent to any server, anywhere, <strong>except when you personally opt in to the remove.bg background-removal API</strong> (see Section 5). We do not store, read, or transmit your documents ourselves.
       </div>
     </div>
 
@@ -156,7 +156,7 @@
       <div class="doc-section">
         <div class="doc-section-title"><span class="doc-section-num">1</span>Who We Are</div>
         <div class="doc-section-body">
-          <p>DocStitcher ("we", "us", "our") is a free browser-based document utility built and operated in India. The service is accessible at this website and as a Progressive Web App (PWA). For any questions about this policy, contact us at <a href="mailto:docstitcherapp.xyzabc@gmail.com">docstitcherapp.xyzabc@gmail.com</a>.</p>
+          <p>DocStitcher ("we", "us", "our") is a free browser-based document utility built and operated in India. The service is accessible at this website and as a Progressive Web App (PWA). For any questions about this policy, contact us at <a href="mailto:docstitcher@gmail.com">docstitcher@gmail.com</a>.</p>
         </div>
       </div>
 
@@ -165,14 +165,14 @@
       <div class="doc-section">
         <div class="doc-section-title"><span class="doc-section-num">2</span>Information We Do NOT Collect</div>
         <div class="doc-section-body">
-          <p>The following data is processed entirely on your device and is <strong>never transmitted to us or any third party</strong>:</p>
+          <p>By default, the following data is processed entirely on your device and is <strong>never transmitted to us or any third party</strong>:</p>
           <ul>
             <li>Documents you upload (Aadhaar, PAN, driving licence, passport, photos, etc.)</li>
             <li>Signatures or watermark images</li>
             <li>Output PDFs, JPGs, or PNGs you generate</li>
             <li>Any personal information contained within those files</li>
           </ul>
-          <p>We have no server-side processing pipeline. There is no backend that receives your files — not even temporarily.</p>
+          <p>We have no server-side processing pipeline. There is no backend that receives your files — not even temporarily. <strong>The one exception</strong> is the optional remove.bg background-removal mode: if you manually enable it and add your own remove.bg API key, the specific photo you run through it is uploaded to remove.bg's servers (a third party, not us) so it can be processed. It is off by default, never activates on its own, and the app confirms with you before the first upload. Full details are in Section 5 below.</p>
         </div>
       </div>
 
@@ -199,14 +199,14 @@
 
       <div class="doc-divider"></div>
 
-      <div class="doc-section">
+      <div class="doc-section" id="third-party">
         <div class="doc-section-title"><span class="doc-section-num">5</span>Third-Party Services</div>
         <div class="doc-section-body">
           <p>We use the following third-party services, each governed by their own privacy policies:</p>
           <ul>
             <li><strong>Google AdSense</strong> — advertising (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policy</a>)</li>
             <li><strong>Google Fonts</strong> — typography, served from Google's CDN (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policy</a>)</li>
-            <li><strong>remove.bg</strong> — optional paid API for AI background removal. Only called if you enter your own API key. Your image is sent to remove.bg's servers in that case only (<a href="https://www.remove.bg/privacy" target="_blank" rel="noopener">policy</a>)</li>
+            <li><strong>remove.bg</strong> — optional, opt-in API for AI background removal. This is <strong>off by default</strong> and is only called if you manually turn it on and enter your own remove.bg API key. When you do, the specific photo you process with it is uploaded to remove.bg's servers for that one operation — no other files, and no automatic or background uploads. DocStitcher shows a confirmation before the first time this happens on your device. (<a href="https://www.remove.bg/privacy" target="_blank" rel="noopener">remove.bg's policy</a>)</li>
           </ul>
         </div>
       </div>
@@ -244,7 +244,7 @@
         <div class="doc-section-title"><span class="doc-section-num">9</span>Contact</div>
         <div class="doc-section-body">
           <p>For any privacy-related questions or concerns, reach us at:<br>
-          📧 <a href="mailto:docstitcherapp.xyzabc@gmail.com">docstitcherapp.xyzabc@gmail.com</a></p>
+          📧 <a href="mailto:docstitcher@gmail.com">docstitcher@gmail.com</a></p>
         </div>
       </div>
 
