@@ -2189,17 +2189,14 @@ window.sdt = (() => {
       redrawCropOverlay();
     };
 
+    let _lastMoveTime = 0;
     cv.onmousemove = e => {
       if(!mtCropDragging) return;
-      // FIX (crop box lagging behind a fast cursor swipe): this used to ALSO
-      // throttle how often we read/clamp the mouse position (skip unless
-      // 33ms had passed). That math is essentially free even on very old
-      // hardware — it's the canvas repaint that's expensive. But skipping the
-      // read meant a fast flick could drop the last few real cursor positions,
-      // so the box visibly froze behind the cursor. We now read+clamp the
-      // position on every event; only the actual repaint stays capped to once
-      // per animation frame via scheduleRedrawCropOverlay()'s existing rAF
-      // dedup below, so the redraw cost on slow PCs is completely unchanged.
+      // Throttle to ~30fps on low-end PCs (2-4GB RAM, Windows 7) to prevent freezing.
+      // On fast machines this has no visible effect since rAF already batches redraws.
+      const now = Date.now();
+      if (now - _lastMoveTime < 33) return;
+      _lastMoveTime = now;
       const pos = clampCanvasPos(getCropCanvasPos(e.clientX, e.clientY), cv);
       const x=Math.min(mtCropStartX, pos.x), y=Math.min(mtCropStartY, pos.y);
       const w=Math.abs(pos.x - mtCropStartX),   h=Math.abs(pos.y - mtCropStartY);
@@ -2207,20 +2204,26 @@ window.sdt = (() => {
       scheduleRedrawCropOverlay();
     };
 
-    cv.onmouseup = e => { commitMtCropDrag(); };
+    cv.onmouseup = e => {
+      if(!mtCropDragging) return;
+      mtCropDragging=false;
+      if (_cropRafId) { cancelAnimationFrame(_cropRafId); _cropRafId=null; }
+      if(mtCropDisplayRect && mtCropDisplayRect.w>4 && mtCropDisplayRect.h>4){
+        // Convert canvas-pixel coords → original image coords
+        mtState.cropRect={
+          x: Math.round(mtCropDisplayRect.x / mtDisplayScale),
+          y: Math.round(mtCropDisplayRect.y / mtDisplayScale),
+          w: Math.round(mtCropDisplayRect.w / mtDisplayScale),
+          h: Math.round(mtCropDisplayRect.h / mtDisplayScale),
+        };
+        mtState.hasCrop=true;
+        document.getElementById('mtApplyCropBtn').classList.add('active-state');
+      }
+    };
 
-    // FIX (fast-cursor-out-of-canvas bug): previously this listener SET
-    // mtCropDragging=false the instant the cursor left the canvas, which threw
-    // away the in-progress selection without ever committing it to mtState.
-    // That is why a fast drag past the edge left the crop box "stuck" and Apply
-    // Crop appeared to do nothing (mtState.cropRect/hasCrop was never updated).
-    // We now leave dragging ON when the cursor exits: onmousemove already clamps
-    // the rect to the canvas bounds (clampCanvasPos/clampCropRect), so the box
-    // simply freezes at the edge and keeps working the moment the cursor comes
-    // back over the canvas. The drag is still safely finalised even if the mouse
-    // button is released outside the canvas, via the document-level mouseup
-    // fallback (commitMtCropDrag) registered once below.
-    cv.onmouseleave = e => {};
+    cv.onmouseleave = e => {
+      if(mtCropDragging) { mtCropDragging=false; if (_cropRafId) { cancelAnimationFrame(_cropRafId); _cropRafId=null; } }
+    };
 
     // Touch support — same getBoundingClientRect approach
     cv.ontouchstart = e => {
@@ -2257,32 +2260,6 @@ window.sdt = (() => {
     };
   }
 
-  // Shared finalize-drag logic used by both the canvas mouseup handler above and
-  // the document-level fallback below (so a release outside the canvas still
-  // commits the crop instead of leaving it "stuck").
-  function commitMtCropDrag(){
-    if(!mtCropDragging) return;
-    mtCropDragging=false;
-    if (_cropRafId) { cancelAnimationFrame(_cropRafId); _cropRafId=null; }
-    if(mtCropDisplayRect && mtCropDisplayRect.w>4 && mtCropDisplayRect.h>4){
-      // Convert canvas-pixel coords → original image coords
-      mtState.cropRect={
-        x: Math.round(mtCropDisplayRect.x / mtDisplayScale),
-        y: Math.round(mtCropDisplayRect.y / mtDisplayScale),
-        w: Math.round(mtCropDisplayRect.w / mtDisplayScale),
-        h: Math.round(mtCropDisplayRect.h / mtDisplayScale),
-      };
-      mtState.hasCrop=true;
-      const btn=document.getElementById('mtApplyCropBtn');
-      if(btn) btn.classList.add('active-state');
-    }
-  }
-  // FIX: registered ONCE at module load (not inside bindMtCropEvents, which runs
-  // many times) so a fast drag that ends with the mouse button released outside
-  // the crop canvas still finishes the crop cleanly, instead of leaving the
-  // selection box stuck on screen with nothing applied to mtState.
-  document.addEventListener('mouseup', commitMtCropDrag);
-
   function mtSyncRotationControl(){
     const input=document.getElementById('mtRotateFine');
     const label=document.getElementById('mtRotateFineLabel');
@@ -2294,13 +2271,6 @@ window.sdt = (() => {
   function mtSetRotation(deg){mtState.rotateDeg=Number(deg)||0;mtCropDisplayRect=null;mtState.cropRect=null;mtState.hasCrop=false;_cachedRotatedCanvas=null;mtSyncRotationControl();renderMultiTool();setTimeout(bindMtCropEvents,50);}
   function mtFlip(dir){if(dir==='h')mtState.flipH=!mtState.flipH;else mtState.flipV=!mtState.flipV;_cachedRotatedCanvas=null;renderMultiTool();setTimeout(bindMtCropEvents,50);}
   function mtApplyCrop(){
-    // FIX (weird overlay on crop-after-crop): clear the leftover selection box
-    // BEFORE re-rendering. Previously the old dashed rectangle from the last
-    // drag stayed in mtCropDisplayRect and got redrawn on top of the freshly
-    // applied crop every time, which is what made repeated cropping look messy.
-    // Clearing it here gives a clean image with no stray box; a new one only
-    // appears once the user starts a fresh drag.
-    mtCropDisplayRect = null;
     try {
       renderMultiTool();
       toast(Lang.t('toastCropApplied'));
@@ -3422,18 +3392,42 @@ window.sdt = (() => {
       if (!key) {
         if (status) status.textContent = '⚠️ No API key saved yet. Click "Setup API Key" to add yours.';
       } else {
-        if (status) status.textContent = 'remove.bg API selected. Uses your personal free credits (50/month).';
+        if (status) status.textContent = 'remove.bg API selected. ⚠️ Your photo will be uploaded to remove.bg\'s external servers. Uses your personal free credits (50/month).';
       }
     } else {
-      if (status) status.textContent = 'Built-in local AI remover selected. Works offline, no API key needed.';
+      if (status) status.textContent = 'Built-in local AI remover selected. 100% on-device — nothing is uploaded anywhere.';
     }
   }
+
+  /* ── One-time consent: remove.bg is the ONLY path in this app where a
+     photo leaves the device. Everything else (stitching, PDF creation,
+     the default local AI remover) stays 100% on-device. We block the
+     first API call behind an explicit confirmation so this is never a
+     silent surprise, on mobile or desktop. Once acknowledged, the choice
+     is remembered in localStorage so it doesn't nag on every use. */
+  const REMOVE_BG_DISCLOSURE_KEY = 'ds_removebg_disclosure_ack';
+
+  function ensureRemoveBgDisclosureAck() {
+    if (localStorage.getItem(REMOVE_BG_DISCLOSURE_KEY) === '1') return true;
+    const ok = window.confirm(
+      "Heads up — this uploads your photo to remove.bg\n\n" +
+      "Every other tool in DocStitcher (stitching, PDFs, crop/rotate, and the default 'Local AI' background remover) runs 100% on your device — nothing is ever uploaded.\n\n" +
+      "The remove.bg API is the one exception: it's an optional, external service. If you continue, THIS photo will be sent over HTTPS to remove.bg's servers to remove its background, using your own API key/credits.\n\n" +
+      "Tap Cancel to use the built-in Local AI remover instead (never leaves your device).\nTap OK to continue and send this photo to remove.bg."
+    );
+    if (ok) localStorage.setItem(REMOVE_BG_DISCLOSURE_KEY, '1');
+    return ok;
+  }
+  window.ensureRemoveBgDisclosureAck = ensureRemoveBgDisclosureAck;
 
   async function removeBgWithApi(sourceCanvas) {
     const apiKey = getRemoveBgApiKey();
     if (!apiKey) {
       showRemoveBgSetup();
       throw new Error('No remove.bg API key saved. Please add your key first.');
+    }
+    if (!ensureRemoveBgDisclosureAck()) {
+      throw new Error('Cancelled — this photo was not sent to remove.bg.');
     }
 
     const blob = await canvasToBlob(sourceCanvas, 'image/png');
@@ -4026,10 +4020,6 @@ const mp = (() => {
   let mpImgDir = 'row';   // 'row' | 'col'
   let mpCorner = 'tl';    // 'tl' | 'tr' | 'bl' | 'br'
   let persons = []; // [{img, canvas, state, cropRect, cropDisplayRect, displayScale, dragging, startX, startY}]
-  // RAF handle for the single-photo quality-slider size estimate — dedups so
-  // dragging the slider doesn't re-encode a JPEG on every 'input' tick,
-  // just once per animation frame (same low-end-PC-safe pattern used elsewhere).
-  let _mpQualRafId = null;
 
   // Paper sizes [width_mm, height_mm] — portrait base dimensions
   const MP_PAPER_SIZES = {
@@ -4243,7 +4233,7 @@ const mp = (() => {
               <label class="ctrl-label" for="mpBgMode${pi}">Removal Method</label>
               <select class="ctrl-select" id="mpBgMode${pi}" ${p.bgBusy?'disabled':''} onchange="mp.setBgMode(${pi},this.value)">
                 <option value="local" ${p.bgMode!=='api'?'selected':''}>🤖 Built-in Local AI (free, Unlimited)</option>
-                <option value="api" ${p.bgMode==='api'?'selected':''}>☁️ remove.bg API (your key, 50 free previews/month)</option>
+                <option value="api" ${p.bgMode==='api'?'selected':''}>☁️ remove.bg API (uploads photo externally · your key, 50 free previews/month)</option>
               </select>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px">
@@ -4532,17 +4522,7 @@ const mp = (() => {
     setTimeout(() => bindCropEvents(pi), 30);
   }
 
-  function applyCrop(pi) {
-    // FIX (weird overlay on crop-after-crop): the old dashed selection box was
-    // left in cropDisplayRect after applying, using coordinates/scale from the
-    // PREVIOUS (larger) canvas size. Since applying a crop shrinks the canvas,
-    // that stale box got redrawn in the wrong place on top of the newly cropped
-    // photo on the next render. Clearing it first gives a clean cropped photo;
-    // a new box only appears once the user starts another drag.
-    const p = persons[pi];
-    if (p) p.cropDisplayRect = null;
-    renderPersonCanvas(pi);
-  }
+  function applyCrop(pi) { renderPersonCanvas(pi); }
 
   function clearCrop(pi) {
     persons[pi].state.cropRect = null;
@@ -4747,38 +4727,22 @@ const mp = (() => {
       p.dragging = true; p.startX = pos.x; p.startY = pos.y;
       p.cropDisplayRect = null;
     };
-    // FIX (crop box lagging behind a fast cursor swipe): previously the ONLY
-    // throttle here was a 33ms Date.now() gate that skipped BOTH reading the
-    // mouse position AND repainting. Reading/clamping the position is cheap
-    // math — it's the canvas repaint (redrawCropDragOverlay) that's expensive.
-    // Gating both together meant a fast flick could drop the last few real
-    // cursor positions, so the box visibly froze behind the cursor. We now
-    // read the position on every event, and instead cap the repaint itself to
-    // once per animation frame (requestAnimationFrame dedup below) — the same
-    // safe pattern already used by the main image-editor crop tool. This keeps
-    // the actual redraw cost on slow PCs unchanged (never more than 1 paint
-    // per screen refresh), it just stops throwing away position data.
-    let _mpCropRafId = null;
-    function scheduleMpCropRedraw(){
-      if (_mpCropRafId) return; // already queued — skip to avoid double-paint
-      _mpCropRafId = requestAnimationFrame(() => { _mpCropRafId = null; redrawCropDragOverlay(pi); });
-    }
+    let _mpLastMove = 0;
     cv.onmousemove = e => {
       if (!p.dragging) return;
+      // Throttle to ~30fps on low-end PCs (2-4 GB RAM, Windows 7) to prevent freezing.
+      const now = Date.now();
+      if (now - _mpLastMove < 33) return;
+      _mpLastMove = now;
       const pos = getPos(e.clientX, e.clientY);
       p.cropDisplayRect = {
         x: Math.min(p.startX, pos.x), y: Math.min(p.startY, pos.y),
         w: Math.abs(pos.x - p.startX), h: Math.abs(pos.y - p.startY)
       };
-      scheduleMpCropRedraw();
+      redrawCropDragOverlay(pi);
     };
-    // Shared finalize-drag logic, used by the canvas mouseup handler AND the
-    // document-level fallback below, so a release outside the canvas still
-    // commits the crop instead of leaving it stuck.
-    function commitCropDrag(){
-      if (!p.dragging) return;
-      p.dragging = false;
-      if (_mpCropRafId) { cancelAnimationFrame(_mpCropRafId); _mpCropRafId = null; }
+    cv.onmouseup = e => {
+      if (!p.dragging) return; p.dragging = false;
       if (p.cropDisplayRect && p.cropDisplayRect.w > 4 && p.cropDisplayRect.h > 4) {
         p.state.cropRect = {
           x: Math.round(p.cropDisplayRect.x / p.displayScale),
@@ -4788,24 +4752,8 @@ const mp = (() => {
         };
         p.state.hasCrop = true;
       }
-    }
-    cv.onmouseup = e => { commitCropDrag(); };
-
-    // FIX (fast-cursor-out-of-canvas bug): this used to abort the drag the
-    // instant the cursor left the canvas, discarding the in-progress selection
-    // before it was ever committed to p.state — that's why a fast drag past the
-    // edge left the crop box "stuck" and Apply Crop did nothing. Now dragging
-    // stays on: onmousemove already clamps to the canvas bounds, so the box
-    // simply freezes at the edge and resumes the moment the cursor comes back.
-    cv.onmouseleave = () => {};
-
-    // FIX: registered once per person-canvas (old listener removed first so
-    // repeated bindCropEvents() calls, which happen on every state change,
-    // don't stack up multiple listeners). Safety net so releasing the mouse
-    // button outside the canvas still finalizes the crop cleanly.
-    if (p._docMouseUp) document.removeEventListener('mouseup', p._docMouseUp);
-    p._docMouseUp = commitCropDrag;
-    document.addEventListener('mouseup', p._docMouseUp);
+    };
+    cv.onmouseleave = () => { p.dragging = false; };
 
     cv.ontouchstart = e => {
       e.preventDefault();
@@ -4918,8 +4866,6 @@ const mp = (() => {
       const ph = document.getElementById('mpSingleImgPlaceholder');
       if (ph) ph.style.display = 'block';
       if (zoomInfo) zoomInfo.textContent = 'Upload a photo above to see it here.';
-      const estEl = document.getElementById('mpSingleQualSizeEst');
-      if (estEl) estEl.textContent = '≈ estimated size: -';
       return;
     }
 
@@ -4962,64 +4908,6 @@ const mp = (() => {
       zoomImg.style.height  = dispH + 'px';
       zoomImg.style.objectFit = 'fill';
       if (zoomInfo) zoomInfo.textContent = `${(wMM/10).toFixed(1)} × ${(hMM/10).toFixed(1)} cm · print ratio`;
-    }
-
-    // Sync the quality slider to whichever person is currently shown — each
-    // person keeps their own saved quality (defaults to 85) so switching the
-    // "Person" dropdown doesn't clobber anyone's chosen setting.
-    const qualEl = document.getElementById('mpSingleQual');
-    const qualLbl = document.getElementById('mpSingleQualLabel');
-    if (qualEl && targetPerson) {
-      const q = targetPerson.state.quality || 85;
-      qualEl.value = q;
-      qualEl.style.setProperty('--pct', ((q - 1) / 99 * 100).toFixed(1) + '%');
-      if (qualLbl) qualLbl.textContent = q + '%';
-    }
-    updateSingleQualSizeEst(targetPerson);
-  }
-
-  // Called on every 'input' tick of the single-photo quality slider.
-  function mpSetSingleQuality(val) {
-    const sel = document.getElementById('mpSingleImgSelector');
-    const pi = sel ? parseInt(sel.value) : 0;
-    const p = persons[pi] && persons[pi].resultCanvas
-      ? persons[pi]
-      : persons.slice(0, personCount).find(pr => pr.resultCanvas);
-    if (!p) return;
-    p.state.quality = Number(val);
-    const lbl = document.getElementById('mpSingleQualLabel');
-    if (lbl) lbl.textContent = val + '%';
-    const rangeEl = document.getElementById('mpSingleQual');
-    if (rangeEl) rangeEl.style.setProperty('--pct', ((val - 1) / 99 * 100).toFixed(1) + '%');
-    updateSingleQualSizeEst(p);
-    setTimeout(saveMpState, 60);
-  }
-
-  // Debounced (RAF) wrapper — dragging the slider fires many 'input' events in
-  // a burst; this makes sure we only ever do the actual JPEG re-encode (the
-  // expensive part) once per animation frame, same low-end-PC-safe pattern
-  // used for the crop-drag redraws elsewhere in this file.
-  function updateSingleQualSizeEst(p) {
-    if (_mpQualRafId) return;
-    _mpQualRafId = requestAnimationFrame(() => {
-      _mpQualRafId = null;
-      computeSingleQualSizeEst(p);
-    });
-  }
-
-  function computeSingleQualSizeEst(p) {
-    const estEl = document.getElementById('mpSingleQualSizeEst');
-    if (!estEl) return;
-    if (!p || !p.resultCanvas) { estEl.textContent = '≈ estimated size: -'; return; }
-    try {
-      const q = Math.max(0.1, Math.min(1, (p.state.quality || 85) / 100));
-      const dataUrl = p.resultCanvas.toDataURL('image/jpeg', q);
-      const estBytes = Math.round(dataUrl.split(',')[1].length * 0.75);
-      estEl.innerHTML = '≈ estimated JPG size: <span class="mt-qual-size-val">' + fmtBytes(estBytes) +
-        '</span> <span style="opacity:.75">(PNG download is always lossless — slider doesn\'t change it)</span>';
-    } catch(e) {
-      // Very low-end PC / huge canvas edge case — fail quietly, don't block the UI.
-      estEl.textContent = '≈ estimated size: -';
     }
   }
 
@@ -5150,9 +5038,7 @@ const mp = (() => {
     ctx.drawImage(cv, 0, 0);
 
     const mime = fmt === 'png' ? 'image/png' : 'image/jpeg';
-    // PNG is always lossless (1.0). JPG uses this person's own quality slider
-    // setting (from the Single Photo Preview card), defaulting to 85 if unset.
-    const quality = fmt === 'png' ? 1.0 : Math.max(0.1, Math.min(1, (p.state.quality || 85) / 100));
+    const quality = fmt === 'png' ? 1.0 : 0.92;
     const dataUrl = out.toDataURL(mime, quality);
     const ext = fmt === 'png' ? 'png' : 'jpg';
     const a = document.createElement('a');
@@ -5619,7 +5505,6 @@ const mp = (() => {
   return {setPersonCount, setOrient, loadFile, onDrop, rotate, setRotation, flip, applyCrop, clearCrop,
           setSize, setSizeRaw, deltaCount, clearPerson, clearPhotoMakerPage, setBgMode, removeBg, fillBg, restoreBg,
           refreshPreview, refreshSingleImagePreview, downloadSingleImageFromSelector, downloadPDF, downloadFillPagePDF, downloadSingleImage,
-          mpSetSingleQuality,
           printPDF, printFillPagePDF,
           setMpPaperSize, setMpCustomDim, setMpImgDir, setMpCorner, mpSetBrightness, mpSendToApp};
 })();
